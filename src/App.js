@@ -71,14 +71,13 @@ class App extends Component {
     return (
       <div className='app'>
         <header>
-            <div className='wrapper'>
-              <h1>Poker Villains</h1>
-              {this.state.user ?
-                <button onClick={this.logout}>Log Out</button>                
-                :
-                <button onClick={this.login}>Log In</button>              
-              }
-            </div>
+          <img src='logo.png' alt='poker villains logo' className='logo' />
+          <h1 className='u-hide-text'>Poker Villains</h1>
+          {/* {this.state.user ?
+            <button onClick={this.logout}>Log Out</button>                
+            :
+            <button onClick={this.login}>Log In</button>              
+          } */}
         </header>
         <div className='league'>
           <table>
@@ -100,10 +99,10 @@ class App extends Component {
                   First Out
                 </th>
                 <th>
-                  Knockouts
+                  KOs
                 </th>
                 <th>
-                  Balance
+                  Bal.
                 </th>
                 <th>
                   Points

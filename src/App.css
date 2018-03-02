@@ -1,3 +1,7 @@
+html {
+  min-width: 320px;
+}
+
 body {
   font-family: 'Open Sans', sans-serif;
   background-color: #fff;
@@ -5,8 +9,8 @@ body {
 
 header {
   color: #fff;
-  background-color: #103D5D;
-  padding: 33px 0 25px 15px;
+  background-color: rgb(61, 172, 27);
+  padding: 15px 30px;
 }
 
 header p {
@@ -26,6 +30,17 @@ header h1 {
   margin: 0;
   vertical-align: middle;
   
+}
+
+.logo {
+  display: block;
+  margin: 0 auto;
+  max-width: 290px;
+}
+
+.u-hide-text {
+  position: absolute;
+  text-indent: -9999px;
 }
 
 .fa {
