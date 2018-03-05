@@ -38,6 +38,17 @@ header h1 {
   max-width: 290px;
 }
 
+.league {
+  padding: 10px;
+}
+
+.league table {
+  margin: 15px auto;
+  max-width: 600px;
+  min-width: 300px;
+  width: 100%;
+}
+
 .u-hide-text {
   position: absolute;
   text-indent: -9999px;
