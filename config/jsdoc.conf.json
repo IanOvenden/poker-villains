@@ -1,0 +1,30 @@
+{
+    "source": {
+        "include": ["./src"],
+        "includePattern": ".+\\.js(doc|x)?$"
+    },
+    "opts": {
+        "destination": "docs/jsdoc",
+        "pedantic": true,
+        "recurse": true,
+        "template": "node_modules/ink-docstrap/template",
+        "configure": "node_modules/ink-docstrap/template/jsdoc.conf.json"
+    },
+    "templates": {
+        "systemName"            : "Snap! JS Documentation",
+        "footer"                : "",
+        "copyright"             : "",
+        "includeDate"           : true,
+        "navType"               : "include",
+        "theme"                 : "superhero",
+        "linenums"              : true,
+        "collapseSymbols"       : false,
+        "inverseNav"            : false,
+        "outputSourceFiles"     : true,
+        "outputSourcePath"      : false,
+        "dateFormat"            : "do MMMM YYYY",
+        "syntaxTheme"           : "dark",
+        "sort"                  : "longname, version, since",
+        "search"                : true 
+    }
+}

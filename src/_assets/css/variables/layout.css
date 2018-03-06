@@ -1,0 +1,11 @@
+:root {
+	--primary-nav-height: 52px;
+	--secondary-nav-height: 48px;
+	--stage-spacing: 10px;
+	--ticket-spacing: 10px;
+	--ticket-padding: 20px;
+	--border-radius: 5px;
+	--stage-header-height: 20px;
+	--stage-footer-height: 36px;
+	--logo-width: 100px;
+}

@@ -1,0 +1,37 @@
+.dragon-chosen {
+	opacity: 0.5;
+}
+
+.dragon-over {
+	position: relative;
+
+	& .drop-zone{
+		background-color: #666666;
+		border-radius: 5px;
+		content: '';
+		left: 0;
+		margin: 0 0 20px;
+		min-height: 55px;
+		opacity: 0.5;
+		padding: 0;
+		width: 280px;
+	}
+}
+
+/* styling empty item - at bottom of the list */
+.dragon-item--empty {
+	background: none;
+	border: none;
+	box-shadow: none;
+	margin-top: 20px;
+	padding-top: 20px;
+
+	&.dragon-item--empty {
+		margin-top: 0;
+	}
+}
+
+/* prevents drag and drop events being called by child elements */
+.dragon-pointer--disable * {
+	pointer-events: none;
+}
