@@ -15,7 +15,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import 'babel-polyfill';
 import 'isomorphic-fetch';
-import Villains from './containers/villains';
+import App from './containers/app';
 import './modules/closest.polyfill';
 import {polyfill} from 'mobile-drag-drop';
 
@@ -32,6 +32,6 @@ polyfill({
 import styles from './_assets/css/app.css';
 
 ReactDOM.render( (
-	<Villains />
-	), document.getElementById( 'villains' )
+	<App />
+	), document.getElementById( 'app' )
 );

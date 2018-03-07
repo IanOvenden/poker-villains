@@ -10,7 +10,10 @@
  */
 
 import { combineReducers } from 'redux';
+import boards from './boards';
+import stages from './stages';
+import tickets from './tickets';
 
-let reducer = combineReducers({});
+let reducer = combineReducers({boards, stages, tickets});
 
 export default reducer;

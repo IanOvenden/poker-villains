@@ -25,7 +25,7 @@ const store = configureStore( window.__REDUX_DEVTOOLS_EXTENSION__ && window.__RE
  * @requires Async
  */
 
-class Villains extends Component {
+class App extends Component {
 
 	/**
      * Setup the router
@@ -60,4 +60,4 @@ class Villains extends Component {
 	}
 }
 
-export default Villains;
+export default App;
