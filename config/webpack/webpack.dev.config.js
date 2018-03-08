@@ -21,8 +21,8 @@ module.exports = function() {
 			new CopyWebpackPlugin( [
 				{from: '_assets/pwa/manifest.json', to: '../../'},
 
-				// {from: '_assets/pwa/browserconfig.xml', to: '../../'},
-				// {from: '_assets/pwa/favicon.ico', to: '../../'},
+				{from: '_assets/pwa/browserconfig.xml', to: '../../'},
+				{from: '_assets/pwa/favicon.ico', to: '../../'},
 				{from: '_assets/images', to: 'images', ignore: [ '*.ai']}
 			] ),
 			new WriteFilePlugin({
