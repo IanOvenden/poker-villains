@@ -21,7 +21,7 @@ class Core extends Component {
 	render() {
 
 		return (
-			<div className="ui ui--subnav" id="ui">
+			<div>
 				{this.props.children}
 			</div>
 		);

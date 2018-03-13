@@ -67,81 +67,69 @@ class Index extends Component {
 
 	render() {
 		return (
-			<div className='app'>
-				<header>
-					<div className='wrapper'>
-						<h1>Poker Villains</h1>
-						{this.state.user ?
-						<button onClick={this.logout}>Log Out</button>
-						:
-						<button onClick={this.login}>Log In</button>
-						}
-					</div>
-				</header>
-				<div className='league'>
-					<table>
-						<thead>
-							<tr>
-								<th>
-									Villain
-								</th>
-								<th>
-									First
-								</th>
-								<th>
-									Second
-								</th>
-								<th>
-									Third
-								</th>
-								<th>
-									First Out
-								</th>
-								<th>
-									Knockouts
-								</th>
-								<th>
-									Balance
-								</th>
-								<th>
-									Points
-								</th>
-							</tr>
-						</thead>
-						<tbody>
-							{this.state.league.map( ( item, index ) => {
-								return (
-									<tr key={index}>
-										<td>
-											<h3>{item.user.firstname}</h3>
-										</td>
-										<td>
-											<h3>{item.first}</h3>
-										</td>
-										<td>
-											<h3>{item.second}</h3>
-										</td>
-										<td>
-											<h3>{item.third}</h3>
-										</td>
-										<td>
-											<h3>{item.firstout}</h3>
-										</td>
-										<td>
-											<h3>{item.knockouts}</h3>
-										</td>
-										<td>
-											<h3>{item.balance}</h3>
-										</td>
-										<td>
-											<h3>{item.points}</h3>
-										</td>
-									</tr>
-								);
-							})}
-						</tbody>
-					</table>
-				</div>
+			<div className='league'>
+				<table>
+					<thead>
+						<tr>
+							<th>
+								Villain
+							</th>
+							<th>
+								First
+							</th>
+							<th>
+								Second
+							</th>
+							<th className="secondary-column">
+								Third
+							</th>
+							<th>
+								First Out
+							</th>
+							<th>
+								Knockouts
+							</th>
+							<th>
+								Balance
+							</th>
+							<th>
+								Points
+							</th>
+						</tr>
+					</thead>
+					<tbody>
+						{this.state.league.map( ( item, index ) => {
+							return (
+								<tr key={index}>
+									<td className="-u-left-align">
+										{item.user.firstname}
+									</td>
+									<td>
+										{item.first}
+									</td>
+									<td>
+										{item.second}
+									</td>
+									<td className="secondary-column">
+										{item.third}
+									</td>
+									<td>
+										{item.firstout}
+									</td>
+									<td>
+										{item.knockouts}
+									</td>
+									<td>
+										{item.balance}
+									</td>
+									<td>
+										{item.points}
+									</td>
+								</tr>
+							);
+						})}
+					</tbody>
+				</table>
 			</div>
 		);
 	}

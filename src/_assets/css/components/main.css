@@ -1,4 +1,9 @@
+html, body {
+	min-width: 320px;
+}
+
 html {
+	color: var( --font-color );
 	font-family: var( --font-text );
 	font-size: var( --font-base-size );
 }
@@ -6,6 +11,11 @@ html {
 body {
 	background-color: var( --color-brand-3 );
 	overflow-y: hidden; /* required to prevent pull down to refresh on Android Chrome */
+}
+
+header {
+	background-color: var( --color-brand-1 );
+	border-bottom: 5px solid var( --color-brand-2 );
 }
 
 a, button {
@@ -29,9 +39,14 @@ p{
 }
 
 .logo{
-	height: 38px;
-	margin: 10px;
+	display: block;
+	margin: auto;
+	max-height: 150px;
 	width: var( --logo-width );
+
+	@media ( width > 600px ) {
+		max-height: 200px;
+	}
 }
 
 h1, h2, h3, h4, h5, h6{
@@ -64,6 +79,19 @@ h5{
 
 h6{
 	font-size: 1rem;
+}
+
+.league {
+	overflow-x: scroll;
+	width: 100%;
+}
+
+.secondary-column {
+	display: none;
+
+	@media ( width > 600px ) {
+		display: initial;
+	}
 }
 
 .ui {

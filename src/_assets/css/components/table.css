@@ -1,0 +1,22 @@
+table {
+	margin: auto;
+}
+
+thead {
+	font-size: 1.4rem;
+	font-weight: 700;
+}
+
+tbody {
+	font-size: 1.3rem;
+}
+
+tr {
+	border-bottom: 1px dashed #666666;
+	white-space: nowrap;
+}
+
+th, td {
+	padding: 5px;
+	text-align: center;
+}

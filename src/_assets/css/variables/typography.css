@@ -1,5 +1,6 @@
 :root {
 	--font-base-size: 62.5%;
+	--font-color: #ffffff;
 	--font-header: 'roboto', sans-serif;
 	--font-text: 'roboto light', sans-serif;
 	--font-weight: 300;
