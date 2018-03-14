@@ -3,6 +3,8 @@ table {
 }
 
 thead {
+	background-color: var( --table-head );
+	color: var( --table-head-text );
 	font-size: 1.4rem;
 	font-weight: 700;
 }
@@ -12,8 +14,11 @@ tbody {
 }
 
 tr {
-	border-bottom: 1px dashed #666666;
+	border-bottom: 1px solid var( --table-border );
 	white-space: nowrap;
+	&:nth-child( even ) {
+		background-color: var( --table-alt-row );
+	}
 }
 
 th, td {

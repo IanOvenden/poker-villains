@@ -68,6 +68,7 @@ class Index extends Component {
 	render() {
 		return (
 			<div className='league'>
+				<h2>League Standings</h2>
 				<table>
 					<thead>
 						<tr>
@@ -83,13 +84,13 @@ class Index extends Component {
 							<th className="secondary-column">
 								Third
 							</th>
-							<th>
+							<th className="secondary-column">
 								First Out
 							</th>
 							<th>
 								Knockouts
 							</th>
-							<th>
+							<th className="secondary-column">
 								Balance
 							</th>
 							<th>
@@ -113,13 +114,13 @@ class Index extends Component {
 									<td className="secondary-column">
 										{item.third}
 									</td>
-									<td>
+									<td className="secondary-column">
 										{item.firstout}
 									</td>
 									<td>
 										{item.knockouts}
 									</td>
-									<td>
+									<td className="secondary-column">
 										{item.balance}
 									</td>
 									<td>

@@ -3,5 +3,8 @@
 	--color-brand-2: #ffffff;
 	--color-brand-3: #5a7086;
 	--color-action: #666666;
-	--ticket-color: #ffffff;
+	--table-head: #ffffff;
+	--table-head-text: #000000;
+	--table-border: #e67f1d;
+	--table-alt-row: #7794b1;
 }
