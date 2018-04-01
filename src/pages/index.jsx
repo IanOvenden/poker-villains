@@ -76,6 +76,9 @@ class Index extends Component {
 								Villain
 							</th>
 							<th>
+								Games
+							</th>
+							<th>
 								First
 							</th>
 							<th>
@@ -104,6 +107,9 @@ class Index extends Component {
 								<tr key={index}>
 									<td className="-u-left-align">
 										{item.user.firstname}
+									</td>
+									<td>
+										{item.games}
 									</td>
 									<td>
 										{item.first}
