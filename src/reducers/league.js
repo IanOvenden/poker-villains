@@ -3,29 +3,29 @@
  * @memberOf module:REDUX_REDUCERS
 */
 
-import { REQUEST_BOARDS, RECEIVE_BOARDS } from '../constants/action-types';
+import { REQUEST_LEAGUE, RECEIVE_LEAGUE } from '../constants/action-types';
 
-/** Handles board slice of state object
- * 	@function boards
+/** Handles league slice of state object
+ * 	@function league
  * 	@param {object} State Current state
  * 	@param {action} string Redux action
  *  @memberOf module:REDUX_REDUCERS
  * 	@returns {reducer} state new state
 */
 
-export default function boards( state = {
+export default function league( state = {
 	isFetching: false,
 	items: []
 }, action ) {
 	switch ( action.type ) {
-	case REQUEST_BOARDS:
+	case REQUEST_LEAGUE:
 		return Object.assign({}, state, {
 			isFetching: true
 		});
-	case RECEIVE_BOARDS:
+	case RECEIVE_LEAGUE:
 		return Object.assign({}, state, {
 			isFetching: false,
-			items: action.boards,
+			items: action.entries,
 			lastUpdated: action.receivedAt
 		});
 	default:

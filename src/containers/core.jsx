@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
+import { fetchLeagueIfNeeded } from '../actions/league';
 
 /**
  * Page wrapper class
@@ -11,6 +13,11 @@ class Core extends Component {
 
 	constructor( props ) {
 		super( props );
+	}
+
+	componentDidMount() {
+		const { dispatch } = this.props;
+		dispatch( fetchLeagueIfNeeded() );
 	}
 
 	/**
@@ -28,4 +35,28 @@ class Core extends Component {
 	}
 }
 
-export default Core;
+/**
+ * propTypes
+ * @memberOf module:BOARDLIST
+ * @property {array} An array of league entries
+ * @property {bool} isFetching - Has a request for entries been made and not yet resolved?
+ * @property {number} lastUpdated - date value
+ * @property {function} dispatch - the redux dispatch function is required.
+ */
+
+Core.propTypes = {
+	league: PropTypes.array.isRequired,
+	isFetching: PropTypes.bool.isRequired,
+	lastUpdated: PropTypes.number,
+	dispatch: PropTypes.func.isRequired
+};
+
+function mapStateToProps( state ) {
+
+	return {
+		league: state.league.items,
+		isFetching: state.league.isFetching
+	};
+}
+
+export default connect( mapStateToProps )( Core );

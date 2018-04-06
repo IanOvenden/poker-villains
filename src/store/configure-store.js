@@ -14,10 +14,13 @@ import offlineConfig from 'redux-offline/lib/defaults';
 import thunkMiddleware from 'redux-thunk';
 import createLogger from 'redux-logger';
 import reducer from '../reducers';
-import { init as websocketInit, emit } from '../actions/websocket';
+
+//import { init as websocketInit, emit } from '../actions/websocket';
 
 const loggerMiddleware = createLogger();
-const middleware = [ thunkMiddleware.withExtraArgument({ emit }) ];
+
+// const middleware = [ thunkMiddleware.withExtraArgument({ emit }) ];
+const middleware = [ thunkMiddleware ];
 
 /** Store creation funciton
  * 	@function configureStore
@@ -37,6 +40,7 @@ export default function configureStore( preloadedState ) {
 			offline( offlineConfig )
 		)
 	);
-	websocketInit( store );
+
+	//websocketInit( store );
 	return store;
 }
