@@ -21,6 +21,28 @@ Redux is a predictable state container for JavaScript apps.
 
 It helps you write applications that behave consistently, run in different environments (client, server, and native), and are easy to test. On top of that, it provides a great developer experience, such as live code editing combined with a time traveling debugger.
 
+### FIREBASE
+
+#### USERS
+4jDos6SJE9vTxPOg76AK - Isaac
+8i98avAmPiSJAfcEvobv - Luke
+FzmvE5tzwcYbwLddMBvt - Ian
+XlL0i4DKb1RXqoPM6SVY - David
+
+#### GAME TEMPLATE
+date
+entry
+firstout
+players
+second
+third
+winner
+
+#### KNOCKOUT TEMPLATE
+loser
+number
+winner
+
 ### OFFLINE
 
 #### Redux Offline
