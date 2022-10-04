@@ -1,0 +1,23 @@
+{
+  "name": "poker-villains",
+  "version": "1.0.0",
+  "description": "Sunday night poker game, season, and performance tracker",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "11ty",
+    "Templating",
+    "Tailwind",
+    "HTML",
+    "CSS",
+    "Static",
+    "Firestore"
+  ],
+  "author": "Ian Ovenden",
+  "license": "ISC",
+  "devDependencies": {
+    "@11ty/eleventy": "^1.0.2"
+  }
+}
