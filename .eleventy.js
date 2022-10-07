@@ -4,7 +4,7 @@
 
 module.exports = function (eleventyConfig) {
 	// Folders to copy to build dir (See. 1.1)
-	eleventyConfig.addPassthroughCopy("src/_assets/images");
+	eleventyConfig.addPassthroughCopy({ "src/_assets/img": "static/img" });
 
 	// Filters 
 	// Object.keys(filters).forEach((filterName) => {

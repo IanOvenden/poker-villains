@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        {% include "head.njk" %}
+        {% if site.env %}
+            <!-- Capture the CSS content as a Nunjucks variable -->
+            {% set css %}{% include "styles.min.css" %}{% endset %}
+            <style>
+                {{css | safe}}
+            </style>
+        {% else %}
+            <link rel="stylesheet" href="/static/css/villains.css">
+        {% endif %}
+
+        <!-- Try and serve Google Fonts in the most efficent way possible -->
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,100;0,400;0,700;1,100;1,400;1,700&display=swap" rel="stylesheet"> 
+        <noscript>
+            <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet" type="text/css"/>
+        </noscript>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js" type="text/javascript"></script>
+    </head>
+    <body>
+
+        <div>
+            <h1>Register</h1>
+            <input type="text" placeholder="full name" id="name">
+            <input type="text" placeholder="email" id="email">
+            <input type="text" placeholder="username" id="username">
+            <input type="text" placeholder="password" id="password">
+            <button id="register">Register</button>
+            <a href="login.html">Already have an account?</a>
+        </div>
+
+        <script type="module">
+            
+            import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.3/firebase-app.js";
+
+            const firebaseConfig = {
+                apiKey: "AIzaSyBZ5WixG8C9muu1yiDflycoYTMosJCkgCs",
+                authDomain: "poker-villains.firebaseapp.com",
+                databaseURL: "https://poker-villains.firebaseio.com",
+                projectId: "poker-villains",
+                storageBucket: "poker-villains.appspot.com",
+                messagingSenderId: "615154241822",
+                appId: "1:615154241822:web:c45077c1994982732ff90f"
+            };
+
+            const app = initializeApp(firebaseConfig);
+
+            import { getDatabase, ref, set, child, get } from "https://www.gstatic.com/firebasejs/9.6.3/firebase-database.js";
+
+            const db = getDatabase();
+
+            // console.log(db);
+
+            const name = document.getElementById("name");
+            const email = document.getElementById("email");
+            const username = document.getElementById("username");
+            const pwd = document.getElementById("password");
+            const submit = document.getElementById("register");
+
+            // register user
+            function registerUser() {
+
+                // TODO: Sanitize input values
+
+                const dbRef = ref(db)
+                //console.log("dbRef: " + dbRef);
+
+                get( child( dbRef, "users/" + username.value ) ).then( (snapshot) => {
+
+                    if( snapshot.exists() ){
+                        alert( "Account exists" );
+                    }
+
+                    else {
+                        set( ref( db, "users/" + username.value ),
+                        {
+                            fullname: name.value,
+                            email: email.value,
+                            username: username.value,
+                            password: hashPwd(),
+                        })
+                        .then ( ()=> {
+                            alert( "User added successfully" );
+                        })
+                        .catch( (error)=> {
+                            alert( "error: " + error );
+                        })
+                    }
+
+                })
+
+            }
+
+            submit.addEventListener( 'click', registerUser );
+
+            function hashPwd(){
+                var pwdHash = CryptoJS.AES.encrypt( pwd.value, pwd.value );
+                return pwdHash.toString();
+            }
+
+        </script>
+    </body>
+</html>

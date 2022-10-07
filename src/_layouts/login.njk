@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        {% include "head.njk" %}
+        {% if site.env %}
+            <!-- Capture the CSS content as a Nunjucks variable -->
+            {% set css %}{% include "styles.min.css" %}{% endset %}
+            <style>
+                {{css | safe}}
+            </style>
+        {% else %}
+            <link rel="stylesheet" href="/static/css/villains.css">
+        {% endif %}
+
+        <!-- Try and serve Google Fonts in the most efficent way possible -->
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,100;0,400;0,700;1,100;1,400;1,700&display=swap" rel="stylesheet"> 
+        <noscript>
+            <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet" type="text/css"/>
+        </noscript>
+    </head>
+    <body>
+
+        <div>
+            <h1>Login</h1>
+            <input type="text" placeholder="username" id="username">
+            <input type="text" placeholder="password" id="password">
+            <label for="persistentLogin">Stay logged in</label>
+            <input type="checkbox" id="persistentLogin">
+            <button id="register">Register</button>
+            <a href="register.html">Create an account</a>
+        </div>
+
+        <script type="module">
+            
+            import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.3/firebase-app.js";
+
+            const firebaseConfig = {
+                apiKey: "AIzaSyBZ5WixG8C9muu1yiDflycoYTMosJCkgCs",
+                authDomain: "poker-villains.firebaseapp.com",
+                databaseURL: "https://poker-villains.firebaseio.com",
+                projectId: "poker-villains",
+                storageBucket: "poker-villains.appspot.com",
+                messagingSenderId: "615154241822",
+                appId: "1:615154241822:web:c45077c1994982732ff90f"
+            };
+
+            const app = initializeApp(firebaseConfig);
+
+            import { getDatabase, ref, set, child, get } from "https://www.gstatic.com/firebasejs/9.6.3/firebase-database.js";
+
+            const db = getDatabase();
+
+            const username = document.getElementById("username");
+            const pwd = document.getElementById("password");
+            const submit = document.getElementById("register");
+
+            function authenticateUser() {
+              const dbRef = ref(db)
+                //console.log("dbRef: " + dbRef);
+
+                get( child( dbRef, "users/" + username.value ) ).then( (snapshot) => {
+
+                  if( snapshot.exists() ){
+                      let dbPwd = decPwd( snapshot.val().password );
+                      if ( dbPwd === pwd.value ) {
+                        login( snapshot.val() );
+                      }
+
+                      else {
+                        alert("user does not exist");
+                      }
+                  }
+
+                  else {
+                      set( ref( db, "users/" + username.value ),
+                      {
+                          fullname: name.value,
+                          email: email.value,
+                          username: username.value,
+                          password: hashPwd(),
+                      })
+                      .then ( ()=> {
+                          alert( "User added successfully" );
+                      })
+                      .catch( (error)=> {
+                          alert( "error: " + error );
+                      })
+                  }
+
+                })
+            }
+
+            function decPwd( dbPwd ) {
+              var pwd = Crypto.AES.decrypt( dbPwd, pwd.value );
+              return pwd.toString( Crypto.enc.Utf8 );
+            }
+
+            //login
+            function login( user ){
+              let persistLogin = document.getElementById( 'persistentLogin' ).checked;
+
+              if( !persistLogin ){
+                sessionStorage.setItem( 'user', JSON.stringify( user ));
+                window.location="index.html";
+              }
+              else {
+                localStorage.setItem( 'persistLogin', true );
+                localStorage.setItem( 'user', JSON.stringify( user ));
+                window.location="index.html";
+              }
+
+            }
+
+        </script>
+    </body>
+</html>
