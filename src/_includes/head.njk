@@ -69,3 +69,21 @@
 
 <!-- disallow Twitter from using your site's info for personalization purposes -->
 <meta name="twitter:dnt" content="on">
+
+{% if site.env %}
+    <!-- Capture the CSS content as a Nunjucks variable -->
+    {% set css %}{% include "styles.min.css" %}{% endset %}
+    <style>
+        {{css | safe}}
+    </style>
+{% else %}
+    <link rel="stylesheet" href="static/css/villains.css">
+{% endif %}
+
+<!-- Try and serve Google Fonts in the most efficent way possible -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,100;0,400;0,700;1,100;1,400;1,700&display=swap" rel="stylesheet"> 
+<noscript>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet" type="text/css"/>
+</noscript>

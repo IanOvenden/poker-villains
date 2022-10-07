@@ -6,3 +6,6 @@ dist
 
 #MacOS
 .DS_store
+
+#Misc
+notes.txt
