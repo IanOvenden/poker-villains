@@ -51,7 +51,7 @@
 <link rel="icon" type="image/png" sizes="16x16" href="/static/pwa/favicons/favicon-16x16.png">
 
 <!-- *CUSTOM* PWA config -->
-<link rel="manifest" href="static/pwa/manifest.json">
+<link rel="manifest" href="/static/pwa/manifest.json">
 <meta name="theme-color" content="#3dac1b"/>
 
 <!-- Facebook Open Graph meta -->
@@ -77,12 +77,12 @@
 <!-- *CUSTOM* Load CSS -->
 {% if site.env %}
   <!-- Capture the CSS content as a Nunjucks variable -->
-  {% set css %}{% include "styles.min.css" %}{% endset %}
+  {% set css %}{% include "/styles.min.css" %}{% endset %}
   <style>
     {{css | safe}}
   </style>
 {% else %}
-  <link rel="stylesheet" href="static/css/villains.css">
+  <link rel="stylesheet" href="/static/css/villains.css">
 {% endif %}
 
 <!-- *CUSTOM* Try and serve Google Fonts in the most efficent way possible -->
@@ -97,7 +97,7 @@
 <script type="text/javascript">
   if ('serviceWorker' in navigator) {
     if ( navigator.serviceWorker.controller === null ) {
-      navigator.serviceWorker.register("serviceworker.js");
+      navigator.serviceWorker.register("/serviceworker.js");
     }
   }
 </script>

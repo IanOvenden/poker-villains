@@ -1,0 +1,29 @@
+<nav class="flex items-center justify-between flex-wrap bg-primary-900 p-6">
+  <div class="flex items-center flex-shrink-0 text-white mr-6">
+    <a href="/index.html">
+        <img src="/static/img/logo-mint.svg" class="w-40 mr-2 mb-2" alt="Poker Villains logo">
+    </a>
+  </div>
+  <div class="block md:hidden">
+    <button class="flex items-center px-3 py-2 border rounded text-green-300 border-green-300 hover:text-white hover:border-white" id="mobileNav">
+      <svg class="fill-current h-3 w-3" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><title>Menu</title><path d="M0 3h20v2H0V3zm0 6h20v2H0V9zm0 6h20v2H0v-2z"/></svg>
+    </button>
+  </div>
+  <div class="w-full hidden flex-grow md:flex md:items-center md:w-auto md:block" id="menuItems">
+    <div class="text-m md:flex-grow">
+      <a href="#responsive-header" class="block mt-4 md:inline-block md:mt-0 text-green-300 hover:text-white mr-4">
+        Seasons
+      </a>
+      <a href="#responsive-header" class="block mt-4 md:inline-block md:mt-0 text-green-300 hover:text-white mr-4">
+        Schedule
+      </a>
+      <a href="#responsive-header" class="block mt-4 md:inline-block md:mt-0 text-green-300 hover:text-white">
+        Players
+      </a>
+    </div>
+    <div class="border-t border-green-300 mt-4 md:border-0 md:mt-0">
+      <a href="/profile.html" id="userlink" class="text-green-300 float-left mt-5 md:mt-1.5 md:mr-4">Username</a>
+      <a href="#" class="inline-block text-m px-4 py-2 leading-none border rounded text-green-300 border-green-300 hover:border-transparent hover:text-green-700 hover:bg-white mt-4 md:mt-0 float-right md:float-left" id="signOutBtn">Sign out</a>
+    </div>
+  </div>
+</nav>

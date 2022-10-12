@@ -13,3 +13,4 @@ Sunday night poker league management app
 ## TODO
 - Login input field validation
 - Update firebase script versions
+- Animate interactions
