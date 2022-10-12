@@ -1,7 +1,7 @@
 module.exports = {
 	"title": "Poker Villains",
 	"description": "Sunday night poker league management",
-	"url": "poker-villains.app",
+	"url": "localhost:8080/index.html",
 	"author": "Ian Ovenden",
 	"meta_data": {
 		"twitter": "@ianovenden",

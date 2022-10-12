@@ -1,4 +1,7 @@
 /** @type {import('tailwindcss').Config} */
+
+const colors = require('tailwindcss/colors')
+
 module.exports = {
   content: ["./src/**/*.njk"],
   theme: {
@@ -20,7 +23,7 @@ module.exports = {
         '4xl': '2rem',
       },
       colors: {
-        'primary': '#1fb6ff',
+        primary: colors.green,
         'secondary': '#7e5bef',
       },
     }

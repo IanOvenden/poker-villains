@@ -1,58 +1,57 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        {% include "head.njk" %}
-    </head>
-    <body>
-        {% include "header.njk" %}
-        {{ content | safe }}
+  <head>
+    {% include "head.njk" %}
+  </head>
+  <body class="bg-slate-200">
+    {% include "header.njk" %}
+    {{ content | safe }}
 
-        <ul>
-            <li>
-                <a href="" id="userlink">Username</a>
-            </li>
-            <li>
-                <a href="" id="signoutlink">Sign out</a>
-            </li>
-        </ul>
+    <ul>
+      <li>
+        <a href="/profile.html" id="userlink">Username</a>
+      </li>
+      <li>
+        <a href="/login.html" id="signoutlink">Sign out</a>
+      </li>
+    </ul>
 
-        <script>
-            
-            let userlink = document.getElementById( 'userlink' );
-            let signoutlink = document.getElementById( 'signoutlink' );
+    <script>
+        
+      let userlink = document.getElementById( 'userlink' );
+      let signoutlink = document.getElementById( 'signoutlink' );
+      var currentUser = null;
 
-            var currentUser = null;
+      function getUsername(){
+        let persistLogin = localStorage.getItem( 'persistLogin' );
 
-            function getUsername(){
-                let persistLogin = localStorage.getItem( 'persistLogin' );
+        if ( persistLogin ) {
+          currentUser = JSON.parse( localStorage.getItem( 'user' ));
+        } else {
+          currentUser = JSON.parse( sessionStorage.getItem( 'user' ));
+        }
+      }
 
-                if ( persistLogin ) {
-                    currentUser = JSON.parse( localStorage.getItem( 'user' ));
-                } else {
-                    currentUser = JSON.parse( sessionStorage.getItem( 'user' ));
-                }
-            }
+      function logOut() {
+        sessionStorage.removeItem( 'user' );
+        localStorage.removeItem( 'user' );
+        localStorage.removeItem( 'persistLogin' );
+        window.location = "login.html";
+      }
 
-            function logOut() {
-                sessionStorage.removeItem( 'user' );
-                localStorage.removeItem( 'user' );
-                localStorage.removeItem( 'persistLogin' );
-                window.location = "login.html";
-            }
+      window.onload = function(){
+        getUsername();
 
-            window.onload = function(){
-                getUsername();
+        if( currentUser == null ) {
+          //throw the user out to login
+          window.location="login.html";
+        } else {
+          userlink.innerText = currentUser.username;
+          signoutlink.addEventListener( 'click', logOut );
+        }
+      }
 
-                if( currentUser == null ) {
-                    //throw the user out to login
-                    window.location="login.html";
-                } else {
-                    userlink.innerText = currentUser.username;
-                    signoutlink.addEventListener( 'click', logOut );
-                }
-            }
+    </script>
 
-        </script>
-
-    </body>
+  </body>
 </html>

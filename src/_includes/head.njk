@@ -46,16 +46,20 @@
 <link rel="author" href="humans.txt">
 
 <!-- Apple Touch Icon (reuse 192px icon.png) & standard favicons -->
-<link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
-<link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32x32.png">
-<link rel="icon" type="image/png" sizes="16x16" href="/static/favicon-16x16.png">
+<link rel="apple-touch-icon" href="/static/pwa/favicons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/static/pwa/favicons/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/static/pwa/favicons/favicon-16x16.png">
+
+<!-- *CUSTOM* PWA config -->
+<link rel="manifest" href="static/pwa/manifest.json">
+<meta name="theme-color" content="#3dac1b"/>
 
 <!-- Facebook Open Graph meta -->
 <meta property="og:url" content="{{ site.url}}{{ page.url }}">
 <meta property="og:type" content="website">
 <meta property="og:title" content="{% if title %}{{ title }}{% else %}{{ site.title }}{% endif %}">
 {% if site.meta_data.default_social_image or featured_image %}
-    <meta property="og:image" content="{% if site.env == 'production' %}{{ site.url }}{% endif %}{% if featured_image  %}{{ featured_image }}{% else %}{{ site.meta_data.opengraph_default }}{% endif %}"/>
+  <meta property="og:image" content="{% if site.env == 'production' %}{{ site.url }}{% endif %}{% if featured_image  %}{{ featured_image }}{% else %}{{ site.meta_data.opengraph_default }}{% endif %}"/>
 {% endif %}
 <meta property="og:description" content="{% if description %}{{ description }}{% else %}{{ site.description }}{% endif %}"/>
 <meta property="og:site_name" content="{{ site.title }}">
@@ -70,20 +74,30 @@
 <!-- disallow Twitter from using your site's info for personalization purposes -->
 <meta name="twitter:dnt" content="on">
 
+<!-- *CUSTOM* Load CSS -->
 {% if site.env %}
-    <!-- Capture the CSS content as a Nunjucks variable -->
-    {% set css %}{% include "styles.min.css" %}{% endset %}
-    <style>
-        {{css | safe}}
-    </style>
+  <!-- Capture the CSS content as a Nunjucks variable -->
+  {% set css %}{% include "styles.min.css" %}{% endset %}
+  <style>
+    {{css | safe}}
+  </style>
 {% else %}
-    <link rel="stylesheet" href="static/css/villains.css">
+  <link rel="stylesheet" href="static/css/villains.css">
 {% endif %}
 
-<!-- Try and serve Google Fonts in the most efficent way possible -->
+<!-- *CUSTOM* Try and serve Google Fonts in the most efficent way possible -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,100;0,400;0,700;1,100;1,400;1,700&display=swap" rel="stylesheet"> 
 <noscript>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet" type="text/css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet" type="text/css"/>
 </noscript>
+
+<!-- *CUSTOM* Service workers -->
+<script type="text/javascript">
+  if ('serviceWorker' in navigator) {
+    if ( navigator.serviceWorker.controller === null ) {
+      navigator.serviceWorker.register("serviceworker.js");
+    }
+  }
+</script>

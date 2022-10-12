@@ -36,8 +36,6 @@
 
 			const db = getDatabase();
 
-			// console.log(db);
-
 			const name = document.getElementById("name");
 			const email = document.getElementById("email");
 			const username = document.getElementById("username");
@@ -73,9 +71,7 @@
 							alert( "error: " + error );
 						})
 					}
-
 				})
-
 			}
 
 			submit.addEventListener( 'click', registerUser );
