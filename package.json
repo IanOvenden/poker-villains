@@ -4,7 +4,10 @@
   "description": "Sunday night poker game, season, and performance tracker",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "esbuild": "node_modules/.bin/esbuild src/_assets/js/*.js --bundle --outdir=dist/static/js/",
+    "esbuildwatch": "node_modules/.bin/esbuild src/_assets/js/*.js --watch --bundle --outdir=dist/static/js/",
+    "esbuildprod": "node_modules/.bin/esbuild src/_assets/js/*.js --bundle --minify --outdir=dist/static/js/"
   },
   "keywords": [
     "11ty",
