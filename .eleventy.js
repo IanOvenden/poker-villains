@@ -6,7 +6,7 @@ module.exports = function (eleventyConfig) {
 	// Folders to copy to build dir (See. 1.1)
 	eleventyConfig.addPassthroughCopy({ "src/_assets/img": "static/img" });
 	eleventyConfig.addPassthroughCopy({ "src/_assets/pwa": "static/pwa" });
-	eleventyConfig.addPassthroughCopy({ "src/_assets/js": "static/js" });
+	// eleventyConfig.addPassthroughCopy({ "src/_assets/js": "static/js" });
 	eleventyConfig.addPassthroughCopy({ "serviceworker.js": "serviceworker.js" });
 
 	// Filters 

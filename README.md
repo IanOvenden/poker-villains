@@ -14,3 +14,5 @@ Sunday night poker league management app
 - Login input field validation
 - Update firebase script versions
 - Animate interactions
+- Minify code
+- Check DB authentication configuration
