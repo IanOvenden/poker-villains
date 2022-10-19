@@ -1,5 +1,7 @@
 import { initializeApp } from 'firebase/app';
 import { getDatabase, ref, set, child, get } from 'firebase/database';
+import { decrypt, encrypt } from 'crypto-js/aes';
+import { enc } from 'crypto-js';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBZ5WixG8C9muu1yiDflycoYTMosJCkgCs",
@@ -20,7 +22,7 @@ const pwd = document.getElementById("password");
 const submit = document.getElementById("register");
 
 function authenticateUser() {
-  
+
   get( child( dbRef, "users/" + username.value ) ).then( (snapshot) => {
 
     if( snapshot.exists() ){
@@ -36,8 +38,8 @@ function authenticateUser() {
 }
 
 function decPwd( dbPwd ) {
-  var decPwd = CryptoJS.AES.decrypt( dbPwd, pwd.value );
-  return decPwd.toString( CryptoJS.enc.Utf8 );
+  var decPwd = decrypt( dbPwd, pwd.value );
+  return decPwd.toString( enc.Utf8 );
 }
 
 //login
