@@ -2,16 +2,7 @@ import { initializeApp } from 'firebase/app';
 import { getDatabase, ref, set, child, get } from 'firebase/database';
 import { decrypt, encrypt } from 'crypto-js/aes';
 import { enc } from 'crypto-js';
-
-const firebaseConfig = {
-  apiKey: "AIzaSyBZ5WixG8C9muu1yiDflycoYTMosJCkgCs",
-  authDomain: "poker-villains.firebaseapp.com",
-  databaseURL: "https://poker-villains.firebaseio.com",
-  projectId: "poker-villains",
-  storageBucket: "poker-villains.appspot.com",
-  messagingSenderId: "615154241822",
-  appId: "1:615154241822:web:c45077c1994982732ff90f"
-};
+import { firebaseConfig } from './fb-config';
 
 const app = initializeApp(firebaseConfig);
 
