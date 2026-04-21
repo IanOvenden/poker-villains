@@ -84,12 +84,15 @@ export default function RecordKnockouts({
                 {players
                   .filter((p) => p.id !== player.id)
                   .map((victim) => {
-                    const isKnockedOut = knockouts[player.id]?.includes(victim.id);
+                    const isKnockedOut = knockouts[player.id]?.includes(
+                      victim.id,
+                    );
                     const knockedOutByOther =
                       !isKnockedOut &&
                       Object.entries(knockouts).some(
                         ([knockerId, victims]) =>
-                          knockerId !== player.id && victims.includes(victim.id)
+                          knockerId !== player.id &&
+                          victims.includes(victim.id),
                       );
                     return (
                       <button
@@ -103,8 +106,8 @@ export default function RecordKnockouts({
                           isKnockedOut
                             ? "bg-accent text-white border-accent"
                             : knockedOutByOther
-                            ? "bg-background text-text-secondary border-gray-100 opacity-40 cursor-not-allowed"
-                            : "bg-background text-text-primary border-gray-100"
+                              ? "bg-background text-text-secondary border-gray-100 opacity-40 cursor-not-allowed"
+                              : "bg-background text-text-primary border-gray-100"
                         }`}
                       >
                         {victim.name}
