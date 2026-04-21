@@ -77,6 +77,7 @@ export default function LogGameStepper({ players }: { players: Player[] }) {
         results: summary.results,
       });
 
+      router.refresh();
       router.replace("/games");
     } catch (err) {
       console.error(err);
