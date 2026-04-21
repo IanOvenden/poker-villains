@@ -43,3 +43,5 @@ Add a game calendar - highlight next game
 Player insights
 Reminder notifications?
 Paid status?
+Unit tests
+Smarter positioning?

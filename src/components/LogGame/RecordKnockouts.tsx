@@ -32,21 +32,15 @@ export default function RecordKnockouts({
     });
   }
 
-  function totalKnockouts() {
-    return Object.entries(knockouts).reduce(
-      (sum, [knockerId, victims]) =>
-        knockedOutPlayerIds.has(knockerId) ? sum : sum + victims.length,
-      0,
-    );
-  }
+  const totalKnockouts = Object.values(knockouts).reduce(
+    (sum, k) => sum + k.length,
+    0,
+  );
+  const requiredKnockouts = players.length - 1;
+  const allAllocated = totalKnockouts === requiredKnockouts;
 
   function handleNext() {
-    const filtered = Object.fromEntries(
-      Object.entries(knockouts).filter(
-        ([knockerId]) => !knockedOutPlayerIds.has(knockerId),
-      ),
-    );
-    onNext(filtered);
+    onNext(knockouts);
   }
 
   return (
@@ -78,7 +72,7 @@ export default function RecordKnockouts({
               disabled={knockedOutPlayerIds.has(player.id)}
               className={`w-full px-6 py-4 flex items-center justify-between ${
                 knockedOutPlayerIds.has(player.id)
-                  ? "opacity-40 cursor-not-allowed"
+                  ? "opacity-50 cursor-not-allowed"
                   : ""
               }`}
             >
@@ -86,21 +80,19 @@ export default function RecordKnockouts({
                 {player.name}
               </span>
               <div className="flex items-center gap-3">
+                {(knockouts[player.id]?.length ?? 0) > 0 && (
+                  <span className="text-xs bg-accent text-white px-2 py-0.5 rounded-full">
+                    {knockouts[player.id].length} KO
+                  </span>
+                )}
                 {knockedOutPlayerIds.has(player.id) ? (
                   <span className="text-xs text-text-secondary">
                     Knocked out
                   </span>
                 ) : (
-                  <>
-                    {(knockouts[player.id]?.length ?? 0) > 0 && (
-                      <span className="text-xs bg-accent text-white px-2 py-0.5 rounded-full">
-                        {knockouts[player.id].length} KO
-                      </span>
-                    )}
-                    <span className="text-text-secondary text-sm">
-                      {activePlayer === player.id ? "▲" : "▼"}
-                    </span>
-                  </>
+                  <span className="text-text-secondary text-sm">
+                    {activePlayer === player.id ? "▲" : "▼"}
+                  </span>
                 )}
               </div>
             </button>
@@ -151,9 +143,16 @@ export default function RecordKnockouts({
 
       <button
         onClick={handleNext}
-        className="w-full py-4 bg-accent text-white rounded-2xl font-medium"
+        disabled={!allAllocated}
+        className={`w-full py-4 rounded-2xl font-medium transition-colors ${
+          allAllocated
+            ? "bg-accent text-white"
+            : "bg-gray-200 text-text-secondary cursor-not-allowed"
+        }`}
       >
-        Continue {totalKnockouts() > 0 ? `(${totalKnockouts()} knockouts)` : ""}
+        {allAllocated
+          ? `Continue (${totalKnockouts} knockouts)`
+          : `${totalKnockouts} / ${requiredKnockouts} knockouts allocated`}
       </button>
     </div>
   );
