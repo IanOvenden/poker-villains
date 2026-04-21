@@ -29,6 +29,7 @@ export function DeleteGameButton({
     setLoading(true);
     try {
       await deleteGameAction(gameId);
+      router.refresh();
       if (redirectAfter) {
         router.push("/games");
       }
