@@ -5,6 +5,7 @@ import {
   getDoc,
   addDoc,
   updateDoc,
+  deleteDoc,
   query,
   where,
   orderBy,
@@ -82,6 +83,25 @@ export async function saveGame(game: Omit<Game, "id">): Promise<Game> {
   }
 
   return { id: ref.id, ...game };
+}
+
+export async function deleteGame(gameId: string): Promise<void> {
+  const gameRef = doc(db, "games", gameId);
+  const gameSnap = await getDoc(gameRef);
+  if (!gameSnap.exists()) return;
+
+  const game = gameSnap.data() as Omit<Game, "id">;
+  await deleteDoc(gameRef);
+
+  const seasonRef = doc(db, "seasons", game.seasonId);
+  const seasonSnap = await getDoc(seasonRef);
+  if (seasonSnap.exists()) {
+    const data = seasonSnap.data();
+    await updateDoc(seasonRef, {
+      gameCount: Math.max(0, (data.gameCount || 0) - 1),
+      potTotal: Math.max(0, (data.potTotal || 0) - game.seasonPotContribution),
+    });
+  }
 }
 
 // --- Stats ---

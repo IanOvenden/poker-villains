@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getActiveSeason, getGamesBySeason, getPlayers } from "@/lib/firestore";
+import { DeleteGameButton } from "@/components/DeleteGameButton";
 import type { Game, Player } from "@/types";
 
 function formatDate(iso: string) {
@@ -54,36 +55,40 @@ export default async function GamesPage() {
             const winner = getWinner(game, players);
             const winnerResult = game.results.find((r) => r.position === 1);
             return (
-              <Link
+              <div
                 key={game.id}
-                href={`/games/${game.id}`}
-                className="bg-surface rounded-2xl px-4 py-4 border border-gray-100 block"
+                className="bg-surface rounded-2xl px-4 py-4 border border-gray-100 flex items-center gap-2"
               >
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-sm text-text-secondary">
-                    {formatDate(game.date)}
-                  </p>
-                  <p className="text-sm text-text-secondary">
-                    {game.playerCount} players
-                  </p>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium text-text-primary">
-                      {winner?.name ?? "Unknown"}
+                <Link href={`/games/${game.id}`} className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-sm text-text-secondary">
+                      {formatDate(game.date)}
                     </p>
-                    <p className="text-xs text-text-secondary mt-0.5">Winner</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-medium text-accent">
-                      £{winnerResult?.prizeMoney ?? 0}
-                    </p>
-                    <p className="text-xs text-text-secondary mt-0.5">
-                      {winnerResult?.points ?? 0} pts
+                    <p className="text-sm text-text-secondary">
+                      {game.playerCount} players
                     </p>
                   </div>
-                </div>
-              </Link>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium text-text-primary">
+                        {winner?.name ?? "Unknown"}
+                      </p>
+                      <p className="text-xs text-text-secondary mt-0.5">
+                        Winner
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-medium text-accent">
+                        £{winnerResult?.prizeMoney ?? 0}
+                      </p>
+                      <p className="text-xs text-text-secondary mt-0.5">
+                        {winnerResult?.points ?? 0} pts
+                      </p>
+                    </div>
+                  </div>
+                </Link>
+                <DeleteGameButton gameId={game.id} className="shrink-0 p-1" />
+              </div>
             );
           })
         )}
