@@ -13,7 +13,6 @@ export interface Season {
 export interface Player {
   id: string;
   name: string;
-  avatarId: string;
   villainId?: string;
   createdAt: string;
 }

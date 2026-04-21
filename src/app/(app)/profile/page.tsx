@@ -10,6 +10,7 @@ import {
 } from "firebase/auth";
 import type { PlayerStats, Season } from "@/types";
 import { VILLAINS } from "@/lib/villains";
+import VillainAvatar from "@/components/VillainAvatar";
 
 const PIN_SUFFIX = "_PV_2024";
 
@@ -128,11 +129,15 @@ export default function ProfilePage() {
     <div className="pt-6">
       {/* Header */}
       <div className="flex items-center gap-4 mb-6">
-        <div className="w-16 h-16 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0">
-          <span className="text-accent font-medium text-2xl">
-            {player.name.charAt(0)}
-          </span>
-        </div>
+        {selectedVillainId ? (
+          <VillainAvatar villainId={selectedVillainId} size={64} />
+        ) : (
+          <div className="w-16 h-16 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0">
+            <span className="text-accent font-medium text-2xl">
+              {player.name.charAt(0)}
+            </span>
+          </div>
+        )}
         <div>
           <h1 className="text-2xl font-medium text-text-primary">
             {player.name}
@@ -191,10 +196,8 @@ export default function ProfilePage() {
         <div className="mb-3">
           <p className="font-medium text-text-primary">Your villain</p>
           {selectedVillainId ? (
-            <div className="flex items-center gap-2 mt-1">
-              <span className="text-xl">
-                {VILLAINS.find((v) => v.id === selectedVillainId)?.emoji}
-              </span>
+            <div className="flex items-center gap-3 mt-1">
+              <VillainAvatar villainId={selectedVillainId} size={36} />
               <span className="text-text-secondary text-sm">
                 {VILLAINS.find((v) => v.id === selectedVillainId)?.name}
                 {" — "}
@@ -220,7 +223,7 @@ export default function ProfilePage() {
                     : "border-gray-100 bg-background text-text-secondary hover:border-accent/40 hover:text-text-primary",
                 ].join(" ")}
               >
-                <span className="text-xl leading-none">{villain.emoji}</span>
+                <VillainAvatar villainId={villain.id} size={32} />
                 <span className="text-sm font-medium leading-tight">{villain.name}</span>
               </button>
             );

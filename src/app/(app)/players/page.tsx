@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getPlayers, getActiveSeason, getPlayerStats } from "@/lib/firestore";
+import VillainAvatar from "@/components/VillainAvatar";
 
 export default async function PlayersPage() {
   const [players, season] = await Promise.all([
@@ -32,11 +33,15 @@ export default async function PlayersPage() {
               href={`/players/${player.id}`}
               className="bg-surface rounded-2xl px-4 py-4 border border-gray-100 flex items-center gap-4"
             >
-              <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0">
-                <span className="text-accent font-medium text-lg">
-                  {player.name.charAt(0)}
-                </span>
-              </div>
+              {player.villainId ? (
+                <VillainAvatar villainId={player.villainId} size={48} />
+              ) : (
+                <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0">
+                  <span className="text-accent font-medium text-lg">
+                    {player.name.charAt(0)}
+                  </span>
+                </div>
+              )}
               <div className="flex-1">
                 <p className="font-medium text-text-primary">{player.name}</p>
                 <p className="text-xs text-text-secondary mt-0.5">

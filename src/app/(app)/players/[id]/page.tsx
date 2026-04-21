@@ -6,6 +6,7 @@ import {
 } from "@/lib/firestore";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import VillainAvatar from "@/components/VillainAvatar";
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("en-GB", {
@@ -45,11 +46,15 @@ export default async function PlayerDetailPage({
 
       {/* Player header */}
       <div className="flex items-center gap-4 mb-6">
-        <div className="w-16 h-16 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0">
-          <span className="text-accent font-medium text-2xl">
-            {player.name.charAt(0)}
-          </span>
-        </div>
+        {player.villainId ? (
+          <VillainAvatar villainId={player.villainId} size={64} />
+        ) : (
+          <div className="w-16 h-16 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0">
+            <span className="text-accent font-medium text-2xl">
+              {player.name.charAt(0)}
+            </span>
+          </div>
+        )}
         <div>
           <h1 className="text-2xl font-medium text-text-primary">
             {player.name}

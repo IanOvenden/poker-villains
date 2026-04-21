@@ -3,7 +3,7 @@ export * from "./firebase";
 export interface PlayerStats {
   playerId: string;
   name: string;
-  avatarId: string;
+  villainId?: string;
   gamesPlayed: number;
   wins: number;
   runnerUps: number;

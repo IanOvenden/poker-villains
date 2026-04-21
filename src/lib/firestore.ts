@@ -105,7 +105,7 @@ export async function getPlayerStats(
     return {
       playerId,
       name: player.name,
-      avatarId: player.avatarId,
+      villainId: player.villainId,
       gamesPlayed: 0,
       wins: 0,
       runnerUps: 0,
@@ -144,7 +144,7 @@ export async function getPlayerStats(
   return {
     playerId,
     name: player.name,
-    avatarId: player.avatarId,
+    villainId: player.villainId,
     gamesPlayed,
     wins,
     runnerUps,

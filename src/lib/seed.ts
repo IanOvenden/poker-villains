@@ -24,12 +24,12 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 const players = [
-  { name: "Ian", avatarId: "shark" },
-  { name: "Isaac", avatarId: "hustler" },
-  { name: "Luke", avatarId: "ghost" },
-  { name: "Dave", avatarId: "gunslinger" },
-  { name: "Emma", avatarId: "viper" },
-  { name: "Simon", avatarId: "don" },
+  { name: "Ian", villainId: "shark" },
+  { name: "Isaac", villainId: "hustler" },
+  { name: "Luke", villainId: "ghost" },
+  { name: "Dave", villainId: "gunslinger" },
+  { name: "Emma", villainId: "viper" },
+  { name: "Simon", villainId: "don" },
 ];
 
 async function seed() {
