@@ -18,10 +18,15 @@ function formatDate(iso: string) {
 
 export default async function PlayerDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ from?: string }>;
 }) {
   const { id } = await params;
+  const { from } = await searchParams;
+  const backHref = from === "standings" ? "/standings" : "/players";
+  const backLabel = from === "standings" ? "Standings" : "Players";
   const season = await getActiveSeason();
   const [player, stats] = await Promise.all([
     getPlayer(id),
@@ -38,10 +43,10 @@ export default async function PlayerDetailPage({
   return (
     <div className="pt-6">
       <Link
-        href="/players"
+        href={backHref}
         className="text-text-secondary text-sm mb-6 flex items-center gap-1"
       >
-        ← Players
+        ← {backLabel}
       </Link>
 
       {/* Player header */}

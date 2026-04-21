@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { getActiveSeason, getSeasonStandings } from "@/lib/firestore";
 import type { PlayerStats, Season } from "@/types";
 
@@ -64,8 +65,9 @@ export default function StandingsPage() {
           </div>
         ) : (
           standings.map((player, index) => (
-            <div
+            <Link
               key={player.playerId}
+              href={`/players/${player.playerId}?from=standings`}
               className="bg-surface rounded-2xl px-4 py-4 flex items-center gap-4 border border-gray-100"
             >
               <span
@@ -92,7 +94,7 @@ export default function StandingsPage() {
                   {player.netEarnings >= 0 ? "+" : ""}£{player.netEarnings}
                 </p>
               </div>
-            </div>
+            </Link>
           ))
         )}
       </div>
