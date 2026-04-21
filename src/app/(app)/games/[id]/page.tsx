@@ -1,6 +1,7 @@
 import { getGame, getPlayers } from "@/lib/firestore";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { DeleteGameButton } from "@/components/DeleteGameButton";
 import type { Player } from "@/types";
 
 function formatDate(iso: string) {
@@ -41,11 +42,16 @@ export default async function GameDetailPage({
         ← Games
       </Link>
 
-      <div className="mb-6">
-        <h1 className="text-2xl font-medium text-text-primary">Game result</h1>
-        <p className="text-text-secondary text-sm mt-1">
-          {formatDate(game.date)}
-        </p>
+      <div className="flex items-start justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-medium text-text-primary">
+            Game result
+          </h1>
+          <p className="text-text-secondary text-sm mt-1">
+            {formatDate(game.date)}
+          </p>
+        </div>
+        <DeleteGameButton gameId={game.id} redirectAfter className="p-1 mt-1" />
       </div>
 
       {/* Summary */}

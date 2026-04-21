@@ -41,4 +41,5 @@ Ability to see third place finishes and first out
 Delete game
 Add a game calendar - highlight next game
 Player insights
-Build
+Reminder notifications?
+Paid status?
