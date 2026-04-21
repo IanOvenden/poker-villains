@@ -39,14 +39,16 @@ export default function SlideMenu() {
           <span className="w-6 h-0.5 bg-white rounded-full" />
         </button>
         <div className="flex-1 flex justify-center">
-          <Image
-            src="/logo.png"
-            alt="Poker Villains"
-            width={120}
-            height={56}
-            className="object-contain invert mix-blend-screen"
-            priority
-          />
+          <Link href="/standings">
+            <Image
+              src="/logo.png"
+              alt="Poker Villains"
+              width={120}
+              height={56}
+              className="object-contain invert mix-blend-screen"
+              priority
+            />
+          </Link>
         </div>
         <div className="w-10" />
       </header>
