@@ -44,7 +44,7 @@ export default function SlideMenu() {
             alt="Poker Villains"
             width={120}
             height={56}
-            className="object-contain"
+            className="object-contain invert mix-blend-screen"
             priority
           />
         </div>
