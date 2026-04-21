@@ -83,19 +83,34 @@ export default function RecordKnockouts({
                 </p>
                 {players
                   .filter((p) => p.id !== player.id)
-                  .map((victim) => (
-                    <button
-                      key={victim.id}
-                      onClick={() => toggleKnockout(player.id, victim.id)}
-                      className={`py-2 px-4 rounded-xl text-sm font-medium border transition-colors ${
-                        knockouts[player.id]?.includes(victim.id)
-                          ? "bg-accent text-white border-accent"
-                          : "bg-background text-text-primary border-gray-100"
-                      }`}
-                    >
-                      {victim.name}
-                    </button>
-                  ))}
+                  .map((victim) => {
+                    const isKnockedOut = knockouts[player.id]?.includes(victim.id);
+                    const knockedOutByOther =
+                      !isKnockedOut &&
+                      Object.entries(knockouts).some(
+                        ([knockerId, victims]) =>
+                          knockerId !== player.id && victims.includes(victim.id)
+                      );
+                    return (
+                      <button
+                        key={victim.id}
+                        onClick={() =>
+                          !knockedOutByOther &&
+                          toggleKnockout(player.id, victim.id)
+                        }
+                        disabled={knockedOutByOther}
+                        className={`py-2 px-4 rounded-xl text-sm font-medium border transition-colors ${
+                          isKnockedOut
+                            ? "bg-accent text-white border-accent"
+                            : knockedOutByOther
+                            ? "bg-background text-text-secondary border-gray-100 opacity-40 cursor-not-allowed"
+                            : "bg-background text-text-primary border-gray-100"
+                        }`}
+                      >
+                        {victim.name}
+                      </button>
+                    );
+                  })}
               </div>
             )}
           </div>
