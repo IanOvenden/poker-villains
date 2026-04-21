@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import { getActiveSeason, saveGame } from "@/lib/firestore";
+import { getActiveSeason } from "@/lib/firestore";
+import { logGameAction } from "@/app/actions/games";
 import { processGame } from "@/lib/pointsEngine";
 import type { Player } from "@/types";
 import type { GamePlayer } from "@/lib/pointsEngine";
@@ -67,7 +68,7 @@ export default function LogGameStepper({ players }: { players: Player[] }) {
 
       const summary = processGame(gamePlayers);
 
-      await saveGame({
+      await logGameAction({
         seasonId: season.id,
         date: new Date().toISOString(),
         playerCount: state.selectedPlayers.length,
