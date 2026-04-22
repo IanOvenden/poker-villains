@@ -1,5 +1,7 @@
 import { getActiveSeason, getSeasonStandings } from "@/lib/firestore";
 
+export const dynamic = "force-dynamic";
+
 const GAMES_IN_SEASON = 30;
 const GAMES_PER_SESSION = 2;
 const SESSIONS_IN_SEASON = GAMES_IN_SEASON / GAMES_PER_SESSION;
@@ -42,7 +44,7 @@ function buildSchedule(startDate: string, gamesPlayed: number): SessionInfo[] {
     const gamesInSession = GAMES_PER_SESSION;
     const completedInSession = Math.min(
       Math.max(gamesPlayed - i * GAMES_PER_SESSION, 0),
-      gamesInSession
+      gamesInSession,
     );
 
     let status: SessionStatus;
@@ -206,7 +208,9 @@ export default async function SeasonPage() {
                           : "bg-gray-100 text-text-secondary"
                     }`}
                   >
-                    {session.status === "complete" ? "✓" : session.sessionNumber}
+                    {session.status === "complete"
+                      ? "✓"
+                      : session.sessionNumber}
                   </div>
                   <div>
                     <p
