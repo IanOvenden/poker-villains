@@ -1,4 +1,4 @@
-import { getGame, getPlayers, getActiveSeason, getGamesBySeason } from "@/lib/firestore";
+import { getGame, getPlayers, getGamesBySeason } from "@/lib/firestore";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { DeleteGameButton } from "@/components/DeleteGameButton";
@@ -25,20 +25,15 @@ export default async function GameDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const [game, players, season] = await Promise.all([
-    getGame(id),
-    getPlayers(),
-    getActiveSeason(),
-  ]);
+  const [game, players] = await Promise.all([getGame(id), getPlayers()]);
 
   if (!game) notFound();
 
-  // Fetch all season games to build prev/next navigation.
+  // Use the game's own seasonId so navigation stays within the correct season,
+  // even if this game belongs to a completed season rather than the active one.
   // getGamesBySeason returns date desc; reverse for chronological order so
   // game index 0 = oldest (Game 1) and index N-1 = newest (Game N).
-  const seasonGames = season
-    ? (await getGamesBySeason(season.id)).reverse()
-    : [];
+  const seasonGames = (await getGamesBySeason(game.seasonId)).reverse();
 
   const currentIndex = seasonGames.findIndex((g) => g.id === id);
   const total = seasonGames.length;
