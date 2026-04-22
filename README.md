@@ -45,3 +45,5 @@ Paid status?
 Unit tests
 Smarter positioning?
 Identifying existing champion
+Historical seasons
+Navigate through games, rather than having to go back to the list screen
