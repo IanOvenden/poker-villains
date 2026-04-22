@@ -1,10 +1,64 @@
 import { getActiveSeason, getSeasonStandings } from "@/lib/firestore";
 
 const GAMES_IN_SEASON = 30;
+const GAMES_PER_SESSION = 2;
+const SESSIONS_IN_SEASON = GAMES_IN_SEASON / GAMES_PER_SESSION;
+const SESSION_INTERVAL_DAYS = 14;
 const BUYIN = 10;
 
 function formatCurrency(amount: number) {
   return `£${amount.toFixed(2)}`;
+}
+
+function formatSessionDate(date: Date): string {
+  return date.toLocaleDateString("en-GB", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+  });
+}
+
+type SessionStatus = "complete" | "next" | "upcoming";
+
+interface SessionInfo {
+  sessionNumber: number;
+  date: Date;
+  game1: number;
+  game2: number;
+  status: SessionStatus;
+}
+
+function buildSchedule(startDate: string, gamesPlayed: number): SessionInfo[] {
+  const base = new Date(startDate);
+  const sessions: SessionInfo[] = [];
+  let nextFound = false;
+
+  for (let i = 0; i < SESSIONS_IN_SEASON; i++) {
+    const date = new Date(base);
+    date.setDate(base.getDate() + i * SESSION_INTERVAL_DAYS);
+
+    const game1 = i * GAMES_PER_SESSION + 1;
+    const game2 = game1 + 1;
+    const gamesInSession = GAMES_PER_SESSION;
+    const completedInSession = Math.min(
+      Math.max(gamesPlayed - i * GAMES_PER_SESSION, 0),
+      gamesInSession
+    );
+
+    let status: SessionStatus;
+    if (completedInSession === gamesInSession) {
+      status = "complete";
+    } else if (!nextFound) {
+      status = "next";
+      nextFound = true;
+    } else {
+      status = "upcoming";
+    }
+
+    sessions.push({ sessionNumber: i + 1, date, game1, game2, status });
+  }
+
+  return sessions;
 }
 
 export default async function SeasonPage() {
@@ -24,6 +78,10 @@ export default async function SeasonPage() {
   const runnerUpPayout = potTotal * 0.25;
 
   const progressPct = Math.round((gamesPlayed / GAMES_IN_SEASON) * 100);
+
+  const schedule = season?.startDate
+    ? buildSchedule(season.startDate, gamesPlayed)
+    : [];
 
   return (
     <div className="pt-6">
@@ -111,7 +169,7 @@ export default async function SeasonPage() {
       </div>
 
       {/* Tiebreaker note */}
-      <div className="bg-surface rounded-2xl p-4 border border-gray-100">
+      <div className="bg-surface rounded-2xl p-4 border border-gray-100 mb-4">
         <h3 className="text-sm font-medium text-text-primary mb-1">
           Tiebreaker rule
         </h3>
@@ -120,6 +178,61 @@ export default async function SeasonPage() {
           determined by win rate (wins per game played) rather than total wins.
         </p>
       </div>
+
+      {/* Schedule */}
+      {schedule.length > 0 && (
+        <div className="bg-surface rounded-2xl border border-gray-100 overflow-hidden">
+          <div className="px-4 pt-4 pb-3">
+            <h3 className="text-sm font-medium text-text-primary">Schedule</h3>
+            <p className="text-xs text-text-secondary mt-0.5">
+              15 sessions · every other Sunday
+            </p>
+          </div>
+          <div className="divide-y divide-gray-100">
+            {schedule.map((session) => (
+              <div
+                key={session.sessionNumber}
+                className={`flex items-center justify-between px-4 py-3 ${
+                  session.status === "next" ? "bg-accent/5" : ""
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <div
+                    className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium flex-shrink-0 ${
+                      session.status === "complete"
+                        ? "bg-accent text-white"
+                        : session.status === "next"
+                          ? "bg-accent/20 text-accent"
+                          : "bg-gray-100 text-text-secondary"
+                    }`}
+                  >
+                    {session.status === "complete" ? "✓" : session.sessionNumber}
+                  </div>
+                  <div>
+                    <p
+                      className={`text-sm font-medium ${
+                        session.status === "upcoming"
+                          ? "text-text-secondary"
+                          : "text-text-primary"
+                      }`}
+                    >
+                      {formatSessionDate(session.date)}
+                    </p>
+                    <p className="text-xs text-text-secondary">
+                      Games {session.game1} &amp; {session.game2}
+                    </p>
+                  </div>
+                </div>
+                {session.status === "next" && (
+                  <span className="text-xs font-medium text-accent bg-accent/10 px-2 py-0.5 rounded-full">
+                    Next
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
