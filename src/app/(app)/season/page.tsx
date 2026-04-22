@@ -1,66 +1,11 @@
 import { getActiveSeason, getSeasonStandings } from "@/lib/firestore";
-
-export const dynamic = "force-dynamic";
+import { buildSchedule, formatSessionDate } from "@/lib/schedule";
 
 const GAMES_IN_SEASON = 30;
-const GAMES_PER_SESSION = 2;
-const SESSIONS_IN_SEASON = GAMES_IN_SEASON / GAMES_PER_SESSION;
-const SESSION_INTERVAL_DAYS = 14;
 const BUYIN = 10;
 
 function formatCurrency(amount: number) {
   return `£${amount.toFixed(2)}`;
-}
-
-function formatSessionDate(date: Date): string {
-  return date.toLocaleDateString("en-GB", {
-    weekday: "short",
-    day: "numeric",
-    month: "short",
-  });
-}
-
-type SessionStatus = "complete" | "next" | "upcoming";
-
-interface SessionInfo {
-  sessionNumber: number;
-  date: Date;
-  game1: number;
-  game2: number;
-  status: SessionStatus;
-}
-
-function buildSchedule(startDate: string, gamesPlayed: number): SessionInfo[] {
-  const base = new Date(startDate);
-  const sessions: SessionInfo[] = [];
-  let nextFound = false;
-
-  for (let i = 0; i < SESSIONS_IN_SEASON; i++) {
-    const date = new Date(base);
-    date.setDate(base.getDate() + i * SESSION_INTERVAL_DAYS);
-
-    const game1 = i * GAMES_PER_SESSION + 1;
-    const game2 = game1 + 1;
-    const gamesInSession = GAMES_PER_SESSION;
-    const completedInSession = Math.min(
-      Math.max(gamesPlayed - i * GAMES_PER_SESSION, 0),
-      gamesInSession,
-    );
-
-    let status: SessionStatus;
-    if (completedInSession === gamesInSession) {
-      status = "complete";
-    } else if (!nextFound) {
-      status = "next";
-      nextFound = true;
-    } else {
-      status = "upcoming";
-    }
-
-    sessions.push({ sessionNumber: i + 1, date, game1, game2, status });
-  }
-
-  return sessions;
 }
 
 export default async function SeasonPage() {
@@ -82,7 +27,7 @@ export default async function SeasonPage() {
   const progressPct = Math.round((gamesPlayed / GAMES_IN_SEASON) * 100);
 
   const schedule = season?.startDate
-    ? buildSchedule(season.startDate, gamesPlayed)
+    ? buildSchedule(season.startDate, gamesPlayed, GAMES_IN_SEASON)
     : [];
 
   return (
@@ -208,9 +153,7 @@ export default async function SeasonPage() {
                           : "bg-gray-100 text-text-secondary"
                     }`}
                   >
-                    {session.status === "complete"
-                      ? "✓"
-                      : session.sessionNumber}
+                    {session.status === "complete" ? "✓" : session.sessionNumber}
                   </div>
                   <div>
                     <p
