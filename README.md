@@ -38,10 +38,10 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 ## TODO
 
 Ability to see third place finishes and first out
-Delete game
 Add a game calendar - highlight next game
 Player insights
 Reminder notifications?
 Paid status?
 Unit tests
 Smarter positioning?
+Identifying existing champion
