@@ -1,3 +1,5 @@
+import type { SessionOverride } from "@/types";
+
 const GAMES_PER_SESSION = 2;
 const SESSION_INTERVAL_DAYS = 14;
 
@@ -6,15 +8,19 @@ export type SessionStatus = "complete" | "next" | "upcoming";
 export interface SessionInfo {
   sessionNumber: number;
   date: Date;
+  originalDate: Date;
   game1: number;
   game2: number;
   status: SessionStatus;
+  postponed: boolean;
+  postponeReason?: string;
 }
 
 export function buildSchedule(
   startDate: string,
   gamesPlayed: number,
-  totalGames: number
+  totalGames: number,
+  overrides?: Record<string, SessionOverride>
 ): SessionInfo[] {
   const sessionsTotal = totalGames / GAMES_PER_SESSION;
   const base = new Date(startDate);
@@ -22,8 +28,11 @@ export function buildSchedule(
   let nextFound = false;
 
   for (let i = 0; i < sessionsTotal; i++) {
-    const date = new Date(base);
-    date.setDate(base.getDate() + i * SESSION_INTERVAL_DAYS);
+    const originalDate = new Date(base);
+    originalDate.setDate(base.getDate() + i * SESSION_INTERVAL_DAYS);
+
+    const override = overrides?.[String(i)];
+    const date = override ? new Date(override.customDate) : originalDate;
 
     const game1 = i * GAMES_PER_SESSION + 1;
     const game2 = game1 + 1;
@@ -42,7 +51,16 @@ export function buildSchedule(
       status = "upcoming";
     }
 
-    sessions.push({ sessionNumber: i + 1, date, game1, game2, status });
+    sessions.push({
+      sessionNumber: i + 1,
+      date,
+      originalDate,
+      game1,
+      game2,
+      status,
+      postponed: !!override,
+      postponeReason: override?.reason,
+    });
   }
 
   return sessions;
@@ -51,10 +69,11 @@ export function buildSchedule(
 export function getNextSession(
   startDate: string,
   gamesPlayed: number,
-  totalGames: number
+  totalGames: number,
+  overrides?: Record<string, SessionOverride>
 ): SessionInfo | null {
   return (
-    buildSchedule(startDate, gamesPlayed, totalGames).find(
+    buildSchedule(startDate, gamesPlayed, totalGames, overrides).find(
       (s) => s.status === "next"
     ) ?? null
   );

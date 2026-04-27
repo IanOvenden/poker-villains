@@ -27,7 +27,7 @@ export default async function SeasonPage() {
   const progressPct = Math.round((gamesPlayed / GAMES_IN_SEASON) * 100);
 
   const schedule = season?.startDate
-    ? buildSchedule(season.startDate, gamesPlayed, GAMES_IN_SEASON)
+    ? buildSchedule(season.startDate, gamesPlayed, GAMES_IN_SEASON, season.sessionOverrides)
     : [];
 
   return (
@@ -164,17 +164,32 @@ export default async function SeasonPage() {
                       }`}
                     >
                       {formatSessionDate(session.date)}
+                      {session.postponed && (
+                        <span className="ml-2 text-xs font-normal text-text-secondary line-through">
+                          {formatSessionDate(session.originalDate)}
+                        </span>
+                      )}
                     </p>
                     <p className="text-xs text-text-secondary">
                       Games {session.game1} &amp; {session.game2}
+                      {session.postponeReason && (
+                        <span> · {session.postponeReason}</span>
+                      )}
                     </p>
                   </div>
                 </div>
-                {session.status === "next" && (
-                  <span className="text-xs font-medium text-accent bg-accent/10 px-2 py-0.5 rounded-full">
-                    Next
-                  </span>
-                )}
+                <div className="flex items-center gap-2">
+                  {session.postponed && (
+                    <span className="text-xs font-medium text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">
+                      Postponed
+                    </span>
+                  )}
+                  {session.status === "next" && (
+                    <span className="text-xs font-medium text-accent bg-accent/10 px-2 py-0.5 rounded-full">
+                      Next
+                    </span>
+                  )}
+                </div>
               </div>
             ))}
           </div>

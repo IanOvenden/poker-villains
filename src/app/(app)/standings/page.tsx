@@ -23,7 +23,7 @@ export default function StandingsPage() {
           setStandings(data);
           if (activeSeason.startDate) {
             setNextSession(
-              getNextSession(activeSeason.startDate, activeSeason.gameCount, 30)
+              getNextSession(activeSeason.startDate, activeSeason.gameCount, 30, activeSeason.sessionOverrides)
             );
           }
         }

@@ -6,12 +6,13 @@ import {
   addDoc,
   updateDoc,
   deleteDoc,
+  deleteField,
   query,
   where,
   orderBy,
 } from "firebase/firestore";
 import { db } from "./firebase";
-import type { Season, Player, Game, PlayerStats } from "@/types";
+import type { Season, Player, Game, PlayerStats, SessionOverride } from "@/types";
 
 const BUYIN = 10;
 
@@ -35,6 +36,25 @@ export async function createSeason(number: number): Promise<Season> {
   };
   const ref = await addDoc(collection(db, "seasons"), data);
   return { id: ref.id, ...data } as Season;
+}
+
+export async function setSessionOverride(
+  seasonId: string,
+  sessionIndex: number,
+  override: SessionOverride
+): Promise<void> {
+  await updateDoc(doc(db, "seasons", seasonId), {
+    [`sessionOverrides.${sessionIndex}`]: override,
+  });
+}
+
+export async function removeSessionOverride(
+  seasonId: string,
+  sessionIndex: number
+): Promise<void> {
+  await updateDoc(doc(db, "seasons", seasonId), {
+    [`sessionOverrides.${sessionIndex}`]: deleteField(),
+  });
 }
 
 // --- Players ---

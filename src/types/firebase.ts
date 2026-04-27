@@ -1,5 +1,10 @@
 export type SeasonStatus = "active" | "complete";
 
+export interface SessionOverride {
+  customDate: string;
+  reason?: string;
+}
+
 export interface Season {
   id: string;
   number: number;
@@ -8,6 +13,7 @@ export interface Season {
   potTotal: number;
   startDate: string;
   endDate?: string;
+  sessionOverrides?: Record<string, SessionOverride>;
 }
 
 export interface Player {
