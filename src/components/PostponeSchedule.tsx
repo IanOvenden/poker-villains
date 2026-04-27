@@ -141,17 +141,29 @@ export default function PostponeSchedule({
                     <button
                       onClick={() => openEdit(sessionIndex)}
                       disabled={saving}
-                      className="text-xs text-text-secondary hover:text-text-primary px-2 py-1 rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-40"
+                      title={session.postponed ? "Edit postponement" : "Postpone session"}
+                      className="p-1.5 rounded-lg text-text-secondary hover:text-text-primary hover:bg-gray-100 transition-colors disabled:opacity-40"
                     >
-                      {session.postponed ? "Edit" : "Postpone"}
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                        <line x1="16" y1="2" x2="16" y2="6" />
+                        <line x1="8" y1="2" x2="8" y2="6" />
+                        <line x1="3" y1="10" x2="21" y2="10" />
+                        <line x1="9" y1="16" x2="15" y2="16" />
+                        <line x1="12" y1="13" x2="12" y2="19" />
+                      </svg>
                     </button>
                     {session.postponed && (
                       <button
                         onClick={() => restore(sessionIndex)}
                         disabled={saving}
-                        className="text-xs text-red-500 hover:text-red-700 px-2 py-1 rounded-lg hover:bg-red-50 transition-colors disabled:opacity-40"
+                        title="Restore original date"
+                        className="p-1.5 rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-40"
                       >
-                        Restore
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          <path d="M3 10h10a8 8 0 018 8v2" />
+                          <polyline points="3 10 9 4 9 16" />
+                        </svg>
                       </button>
                     )}
                   </div>
