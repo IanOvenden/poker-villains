@@ -1,7 +1,8 @@
 export type SeasonStatus = "active" | "complete";
 
 export interface SessionOverride {
-  customDate: string;
+  customDate?: string;
+  skipped?: boolean;
   reason?: string;
 }
 

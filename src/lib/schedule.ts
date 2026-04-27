@@ -3,7 +3,7 @@ import type { SessionOverride } from "@/types";
 const GAMES_PER_SESSION = 2;
 const SESSION_INTERVAL_DAYS = 14;
 
-export type SessionStatus = "complete" | "next" | "upcoming";
+export type SessionStatus = "complete" | "next" | "upcoming" | "skipped";
 
 export interface SessionInfo {
   sessionNumber: number;
@@ -13,7 +13,8 @@ export interface SessionInfo {
   game2: number;
   status: SessionStatus;
   postponed: boolean;
-  postponeReason?: string;
+  skipped: boolean;
+  overrideReason?: string;
 }
 
 export function buildSchedule(
@@ -26,23 +27,37 @@ export function buildSchedule(
   const base = new Date(startDate);
   const sessions: SessionInfo[] = [];
   let nextFound = false;
+  let skipsCount = 0;
 
   for (let i = 0; i < sessionsTotal; i++) {
-    const originalDate = new Date(base);
-    originalDate.setDate(base.getDate() + i * SESSION_INTERVAL_DAYS);
-
     const override = overrides?.[String(i)];
-    const date = override ? new Date(override.customDate) : originalDate;
+    const isSkipped = override?.skipped === true;
 
-    const game1 = i * GAMES_PER_SESSION + 1;
-    const game2 = game1 + 1;
-    const completedInSession = Math.min(
-      Math.max(gamesPlayed - i * GAMES_PER_SESSION, 0),
-      GAMES_PER_SESSION
-    );
+    // Each prior skip pushes remaining sessions forward by one interval
+    const originalDate = new Date(base);
+    originalDate.setDate(base.getDate() + (i + skipsCount) * SESSION_INTERVAL_DAYS);
+
+    const date =
+      !isSkipped && override?.customDate
+        ? new Date(override.customDate)
+        : originalDate;
+
+    // Game numbers count only non-skipped sessions
+    const nonSkippedIndex = i - skipsCount;
+    const game1 = isSkipped ? 0 : nonSkippedIndex * GAMES_PER_SESSION + 1;
+    const game2 = isSkipped ? 0 : game1 + 1;
+
+    const completedInSession = isSkipped
+      ? 0
+      : Math.min(
+          Math.max(gamesPlayed - nonSkippedIndex * GAMES_PER_SESSION, 0),
+          GAMES_PER_SESSION
+        );
 
     let status: SessionStatus;
-    if (completedInSession === GAMES_PER_SESSION) {
+    if (isSkipped) {
+      status = "skipped";
+    } else if (completedInSession === GAMES_PER_SESSION) {
       status = "complete";
     } else if (!nextFound) {
       status = "next";
@@ -51,6 +66,8 @@ export function buildSchedule(
       status = "upcoming";
     }
 
+    if (isSkipped) skipsCount++;
+
     sessions.push({
       sessionNumber: i + 1,
       date,
@@ -58,8 +75,9 @@ export function buildSchedule(
       game1,
       game2,
       status,
-      postponed: !!override,
-      postponeReason: override?.reason,
+      postponed: !isSkipped && !!override?.customDate,
+      skipped: isSkipped,
+      overrideReason: override?.reason,
     });
   }
 
