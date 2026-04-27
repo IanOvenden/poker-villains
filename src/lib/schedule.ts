@@ -23,34 +23,38 @@ export function buildSchedule(
   totalGames: number,
   overrides?: Record<string, SessionOverride>
 ): SessionInfo[] {
-  const sessionsTotal = totalGames / GAMES_PER_SESSION;
+  const baseSessions = totalGames / GAMES_PER_SESSION;
+  const totalSkips = Object.values(overrides ?? {}).filter(
+    (o) => o.skipped === true
+  ).length;
+  const sessionsTotal = baseSessions + totalSkips;
+
   const base = new Date(startDate);
   const sessions: SessionInfo[] = [];
   let nextFound = false;
-  let skipsCount = 0;
+  let nonSkippedCount = 0;
 
   for (let i = 0; i < sessionsTotal; i++) {
     const override = overrides?.[String(i)];
     const isSkipped = override?.skipped === true;
 
-    // Each prior skip pushes remaining sessions forward by one interval
+    // Dates always follow the fixed cadence — no offset for skips
     const originalDate = new Date(base);
-    originalDate.setDate(base.getDate() + (i + skipsCount) * SESSION_INTERVAL_DAYS);
+    originalDate.setDate(base.getDate() + i * SESSION_INTERVAL_DAYS);
 
     const date =
       !isSkipped && override?.customDate
         ? new Date(override.customDate)
         : originalDate;
 
-    // Game numbers count only non-skipped sessions
-    const nonSkippedIndex = i - skipsCount;
-    const game1 = isSkipped ? 0 : nonSkippedIndex * GAMES_PER_SESSION + 1;
+    // Game numbers only count non-skipped sessions
+    const game1 = isSkipped ? 0 : nonSkippedCount * GAMES_PER_SESSION + 1;
     const game2 = isSkipped ? 0 : game1 + 1;
 
     const completedInSession = isSkipped
       ? 0
       : Math.min(
-          Math.max(gamesPlayed - nonSkippedIndex * GAMES_PER_SESSION, 0),
+          Math.max(gamesPlayed - nonSkippedCount * GAMES_PER_SESSION, 0),
           GAMES_PER_SESSION
         );
 
@@ -66,7 +70,7 @@ export function buildSchedule(
       status = "upcoming";
     }
 
-    if (isSkipped) skipsCount++;
+    if (!isSkipped) nonSkippedCount++;
 
     sessions.push({
       sessionNumber: i + 1,

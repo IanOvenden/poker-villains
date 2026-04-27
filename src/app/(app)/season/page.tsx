@@ -1,5 +1,6 @@
 import { getActiveSeason, getSeasonStandings } from "@/lib/firestore";
 import PostponeSchedule from "@/components/PostponeSchedule";
+import { buildSchedule } from "@/lib/schedule";
 
 const GAMES_IN_SEASON = 30;
 const BUYIN = 10;
@@ -25,6 +26,9 @@ export default async function SeasonPage() {
   const runnerUpPayout = potTotal * 0.25;
 
   const progressPct = Math.round((gamesPlayed / GAMES_IN_SEASON) * 100);
+  const sessionCount = season?.startDate
+    ? buildSchedule(season.startDate, gamesPlayed, GAMES_IN_SEASON, season.sessionOverrides).length
+    : GAMES_IN_SEASON / 2;
 
   return (
     <div className="pt-6">
@@ -128,7 +132,7 @@ export default async function SeasonPage() {
           <div className="px-4 pt-4 pb-3">
             <h3 className="text-sm font-medium text-text-primary">Schedule</h3>
             <p className="text-xs text-text-secondary mt-0.5">
-              15 sessions · every other Sunday
+              {sessionCount} sessions · every other Sunday
             </p>
           </div>
           <PostponeSchedule
