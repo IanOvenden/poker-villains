@@ -1,5 +1,5 @@
 import { getActiveSeason, getSeasonStandings } from "@/lib/firestore";
-import { buildSchedule, formatSessionDate } from "@/lib/schedule";
+import PostponeSchedule from "@/components/PostponeSchedule";
 
 const GAMES_IN_SEASON = 30;
 const BUYIN = 10;
@@ -25,10 +25,6 @@ export default async function SeasonPage() {
   const runnerUpPayout = potTotal * 0.25;
 
   const progressPct = Math.round((gamesPlayed / GAMES_IN_SEASON) * 100);
-
-  const schedule = season?.startDate
-    ? buildSchedule(season.startDate, gamesPlayed, GAMES_IN_SEASON, season.sessionOverrides)
-    : [];
 
   return (
     <div className="pt-6">
@@ -127,7 +123,7 @@ export default async function SeasonPage() {
       </div>
 
       {/* Schedule */}
-      {schedule.length > 0 && (
+      {season?.startDate && (
         <div className="bg-surface rounded-2xl border border-gray-100 overflow-hidden">
           <div className="px-4 pt-4 pb-3">
             <h3 className="text-sm font-medium text-text-primary">Schedule</h3>
@@ -135,64 +131,13 @@ export default async function SeasonPage() {
               15 sessions · every other Sunday
             </p>
           </div>
-          <div className="divide-y divide-gray-100">
-            {schedule.map((session) => (
-              <div
-                key={session.sessionNumber}
-                className={`flex items-center justify-between px-4 py-3 ${
-                  session.status === "next" ? "bg-accent/5" : ""
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <div
-                    className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium flex-shrink-0 ${
-                      session.status === "complete"
-                        ? "bg-accent text-white"
-                        : session.status === "next"
-                          ? "bg-accent/20 text-accent"
-                          : "bg-gray-100 text-text-secondary"
-                    }`}
-                  >
-                    {session.status === "complete" ? "✓" : session.sessionNumber}
-                  </div>
-                  <div>
-                    <p
-                      className={`text-sm font-medium ${
-                        session.status === "upcoming"
-                          ? "text-text-secondary"
-                          : "text-text-primary"
-                      }`}
-                    >
-                      {formatSessionDate(session.date)}
-                      {session.postponed && (
-                        <span className="ml-2 text-xs font-normal text-text-secondary line-through">
-                          {formatSessionDate(session.originalDate)}
-                        </span>
-                      )}
-                    </p>
-                    <p className="text-xs text-text-secondary">
-                      Games {session.game1} &amp; {session.game2}
-                      {session.postponeReason && (
-                        <span> · {session.postponeReason}</span>
-                      )}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  {session.postponed && (
-                    <span className="text-xs font-medium text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">
-                      Postponed
-                    </span>
-                  )}
-                  {session.status === "next" && (
-                    <span className="text-xs font-medium text-accent bg-accent/10 px-2 py-0.5 rounded-full">
-                      Next
-                    </span>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
+          <PostponeSchedule
+            seasonId={season.id}
+            startDate={season.startDate}
+            gameCount={gamesPlayed}
+            totalGames={GAMES_IN_SEASON}
+            initialOverrides={season.sessionOverrides}
+          />
         </div>
       )}
     </div>
