@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { setSessionOverride, removeSessionOverride } from "@/lib/firestore";
+import { setSessionOverrideAction, removeSessionOverrideAction } from "@/app/actions/sessions";
 import { buildSchedule, formatSessionDate } from "@/lib/schedule";
 import type { SessionOverride } from "@/types";
 
@@ -55,7 +55,7 @@ export default function PostponeSchedule({
         customDate: new Date(editing.date).toISOString(),
         ...(editing.reason.trim() ? { reason: editing.reason.trim() } : {}),
       };
-      await setSessionOverride(seasonId, editing.sessionIndex, override);
+      await setSessionOverrideAction(seasonId, editing.sessionIndex, override);
       setOverrides((prev) => ({ ...prev, [String(editing.sessionIndex)]: override }));
       close();
     } finally {
@@ -66,7 +66,7 @@ export default function PostponeSchedule({
   async function restore(sessionIndex: number) {
     setSaving(true);
     try {
-      await removeSessionOverride(seasonId, sessionIndex);
+      await removeSessionOverrideAction(seasonId, sessionIndex);
       setOverrides((prev) => {
         const next = { ...prev };
         delete next[String(sessionIndex)];
