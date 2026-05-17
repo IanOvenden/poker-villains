@@ -38,12 +38,12 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 ## TODO
 
 Ability to see third place finishes and first out
-Add a game calendar - highlight next game
 Player insights
 Reminder notifications?
 Paid status?
 Unit tests
-Smarter positioning?
 Identifying existing champion
 Historical seasons
-Navigate through games, rather than having to go back to the list screen
+Stats section
+Log player position for each game?
+Session payments

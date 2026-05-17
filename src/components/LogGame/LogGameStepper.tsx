@@ -1,103 +1,131 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import { getActiveSeason } from "@/lib/firestore";
-import { logGameAction } from "@/app/actions/games";
-import { processGame } from "@/lib/pointsEngine";
-import type { Player } from "@/types";
-import type { GamePlayer } from "@/lib/pointsEngine";
+import {
+  subscribeToDraft,
+  advanceToKnockouts,
+  advanceToPositions,
+  updateStep,
+  updatePresence,
+  removePresence,
+  deleteDraftClient,
+} from "@/lib/draftGame";
+import { confirmDraftGameAction } from "@/app/actions/games";
+import type { Player, DraftGame } from "@/types";
 import SelectPlayers from "./SelectPlayers";
 import RecordKnockouts from "./RecordKnockouts";
 import SetPositions from "./SetPositions";
 import ConfirmGame from "./ConfirmGame";
+import PresenceIndicator from "./PresenceIndicator";
 
-export type LogGameStep = "select" | "knockouts" | "positions" | "confirm";
+const STEPS: DraftGame["step"][] = [
+  "select",
+  "knockouts",
+  "positions",
+  "confirm",
+];
 
-export interface LogGameState {
-  selectedPlayers: Player[];
-  knockouts: Record<string, string[]>;
-  positions: Record<string, number>;
+interface Props {
+  draftId: string;
+  initialDraft: DraftGame;
+  allPlayers: Player[];
 }
 
-const INITIAL_STATE: LogGameState = {
-  selectedPlayers: [],
-  knockouts: {},
-  positions: {},
-};
-
-export default function LogGameStepper({ players }: { players: Player[] }) {
-  const [step, setStep] = useState<LogGameStep>("select");
-  const [state, setState] = useState<LogGameState>(INITIAL_STATE);
+export default function LogGameStepper({
+  draftId,
+  initialDraft,
+  allPlayers,
+}: Props) {
+  const [draft, setDraft] = useState<DraftGame | null>(initialDraft);
   const [isSaving, setIsSaving] = useState(false);
+  const [isDiscarding, setIsDiscarding] = useState(false);
   const router = useRouter();
-  const { user } = useAuth();
+  const { player } = useAuth();
 
-  const steps: LogGameStep[] = ["select", "knockouts", "positions", "confirm"];
-  const stepIndex = steps.indexOf(step);
+  // Real-time subscription — only update state here, never call router inside the callback
+  useEffect(() => {
+    const unsubscribe = subscribeToDraft(draftId, setDraft);
+    return unsubscribe;
+  }, [draftId]);
 
-  function handleSelectPlayers(selectedPlayers: Player[]) {
-    setState({ ...INITIAL_STATE, selectedPlayers });
-    setStep("knockouts");
-  }
+  // Navigate away when the draft is deleted (by any user)
+  useEffect(() => {
+    if (draft === null) {
+      router.replace("/games");
+      router.refresh();
+    }
+  }, [draft, router]);
 
-  function handleKnockouts(knockouts: Record<string, string[]>) {
-    setState((s) => ({ ...s, knockouts }));
-    setStep("positions");
-  }
+  // Presence heartbeat
+  useEffect(() => {
+    if (!player) return;
+    const { id: playerId, name: displayName } = player;
+    updatePresence(draftId, playerId, displayName);
+    const interval = setInterval(() => {
+      updatePresence(draftId, playerId, displayName);
+    }, 30_000);
+    return () => {
+      clearInterval(interval);
+      removePresence(draftId, playerId);
+    };
+  }, [draftId, player]);
 
-  function handlePositions(positions: Record<string, number>) {
-    setState((s) => ({ ...s, positions }));
-    setStep("confirm");
-  }
+  // While draft is null the navigation effect above is running — render nothing
+  if (!draft) return null;
+
+  const stepIndex = STEPS.indexOf(draft.step);
+  const selectedPlayers = allPlayers.filter((p) =>
+    draft.selectedPlayerIds.includes(p.id),
+  );
 
   async function handleConfirm() {
     if (isSaving) return;
     setIsSaving(true);
-
     try {
-      const season = await getActiveSeason();
-      if (!season) throw new Error("No active season");
-
-      const gamePlayers: GamePlayer[] = state.selectedPlayers.map((p) => ({
-        playerId: p.id,
-        position: state.positions[p.id],
-        knockouts: state.knockouts[p.id] || [],
-      }));
-
-      const summary = processGame(gamePlayers);
-
-      await logGameAction({
-        seasonId: season.id,
-        date: new Date().toISOString(),
-        playerCount: state.selectedPlayers.length,
-        potTotal: summary.potTotal,
-        seasonPotContribution: summary.seasonPotContribution,
-        results: summary.results,
-      });
-
-      router.refresh();
+      await confirmDraftGameAction(draftId);
       router.replace("/games");
+      router.refresh();
     } catch (err) {
       console.error(err);
-    } finally {
       setIsSaving(false);
+    }
+  }
+
+  async function handleCancel() {
+    if (isDiscarding) return;
+    setIsDiscarding(true);
+    try {
+      // Client-side deletion triggers onSnapshot for ALL connected clients instantly,
+      // without waiting for a server round-trip. The useEffect watching draft===null
+      // then navigates every user away simultaneously.
+      await deleteDraftClient(draftId);
+      router.replace("/games");
+      router.refresh();
+    } catch (err) {
+      console.error(err);
+      setIsDiscarding(false);
     }
   }
 
   return (
     <div className="pt-6">
+      <PresenceIndicator
+        presence={draft.presence}
+        currentPlayerId={player?.id ?? ""}
+      />
+
       {/* Progress indicator */}
       <div className="flex items-center w-full mb-8">
-        {steps.map((s, i) => (
+        {STEPS.map((s, i) => (
           <div key={s} className="contents">
             <div
               className={`w-2.5 h-2.5 rounded-full flex-shrink-0 transition-colors ${
                 i <= stepIndex ? "bg-accent" : "bg-gray-200"
               }`}
             />
-            {i < steps.length - 1 && (
+            {i < STEPS.length - 1 && (
               <div
                 className={`h-0.5 flex-1 transition-colors ${
                   i < stepIndex ? "bg-accent" : "bg-gray-200"
@@ -108,39 +136,71 @@ export default function LogGameStepper({ players }: { players: Player[] }) {
         ))}
       </div>
 
-      {step === "select" && (
+      {draft.step === "select" && (
         <SelectPlayers
-          players={players}
-          initialSelected={state.selectedPlayers}
-          onNext={handleSelectPlayers}
+          players={allPlayers}
+          selectedPlayerIds={draft.selectedPlayerIds}
+          draftId={draftId}
+          onNext={() => advanceToKnockouts(draftId)}
         />
       )}
-      {step === "knockouts" && (
+      {draft.step === "knockouts" && (
         <RecordKnockouts
-          players={state.selectedPlayers}
-          initialKnockouts={state.knockouts}
-          onNext={handleKnockouts}
-          onBack={() => setStep("select")}
+          players={selectedPlayers}
+          knockouts={draft.knockouts}
+          draftId={draftId}
+          onNext={async () => {
+            // Derive finishing positions from the elimination order:
+            // last knocked out → 2nd place, first knocked out → last place,
+            // the surviving player (never knocked out) → 1st place.
+            const eliminationOrder = draft.eliminationOrder ?? [];
+            const winner = selectedPlayers.find(
+              (p) => !eliminationOrder.includes(p.id),
+            );
+            const eliminatedByRank = [...eliminationOrder].reverse();
+            const ordered = [
+              ...(winner ? [winner] : []),
+              ...eliminatedByRank
+                .map((id) => selectedPlayers.find((p) => p.id === id))
+                .filter((p): p is Player => p !== undefined),
+            ];
+            const positions: Record<string, number> = {};
+            ordered.forEach((p, i) => {
+              positions[p.id] = i + 1;
+            });
+            await advanceToPositions(draftId, positions);
+          }}
+          onBack={() => updateStep(draftId, "select")}
         />
       )}
-      {step === "positions" && (
+      {draft.step === "positions" && (
         <SetPositions
-          players={state.selectedPlayers}
-          knockouts={state.knockouts}
-          initialPositions={state.positions}
-          onNext={handlePositions}
-          onBack={() => setStep("knockouts")}
+          players={selectedPlayers}
+          knockouts={draft.knockouts}
+          positions={draft.positions}
+          draftId={draftId}
+          onNext={() => updateStep(draftId, "confirm")}
+          onBack={() => updateStep(draftId, "knockouts")}
         />
       )}
-      {step === "confirm" && (
+      {draft.step === "confirm" && (
         <ConfirmGame
-          state={state}
-          players={state.selectedPlayers}
+          selectedPlayers={selectedPlayers}
+          knockouts={draft.knockouts}
+          positions={draft.positions}
           isSaving={isSaving}
           onConfirm={handleConfirm}
-          onBack={() => setStep("positions")}
+          onBack={() => updateStep(draftId, "positions")}
         />
       )}
+
+      <button
+        onClick={handleCancel}
+        disabled={isDiscarding || isSaving}
+        className="mt-6 w-full py-3 text-sm text-text-secondary border border-gray-200 rounded-2xl disabled:opacity-40"
+      >
+        {isDiscarding ? "Discarding…" : "Discard game"}
+      </button>
     </div>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   DndContext,
   closestCenter,
@@ -19,6 +19,7 @@ import {
 } from "@dnd-kit/sortable";
 import { KeyboardSensor } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
+import { setAllPositions } from "@/lib/draftGame";
 import type { Player } from "@/types";
 
 interface SortablePlayerProps {
@@ -88,27 +89,35 @@ function SortablePlayer({ player, index, knockouts }: SortablePlayerProps) {
 interface Props {
   players: Player[];
   knockouts: Record<string, string[]>;
-  initialPositions: Record<string, number>;
-  onNext: (positions: Record<string, number>) => void;
+  positions: Record<string, number>;
+  draftId: string;
+  onNext: () => void;
   onBack: () => void;
 }
 
 export default function SetPositions({
   players,
   knockouts,
-  initialPositions,
+  positions,
+  draftId,
   onNext,
   onBack,
 }: Props) {
-  const [ordered, setOrdered] = useState<Player[]>(() => {
-    if (Object.keys(initialPositions).length > 0) {
-      return [...players].sort(
-        (a, b) =>
-          (initialPositions[a.id] || 99) - (initialPositions[b.id] || 99),
-      );
-    }
-    return [...players];
-  });
+  // Derive the sorted order from Firestore positions; local state for drag responsiveness
+  const [ordered, setOrdered] = useState<Player[]>(() =>
+    [...players].sort(
+      (a, b) => (positions[a.id] ?? 99) - (positions[b.id] ?? 99),
+    ),
+  );
+
+  // Sync when Firestore positions change (remote user reordered)
+  useEffect(() => {
+    setOrdered(
+      [...players].sort(
+        (a, b) => (positions[a.id] ?? 99) - (positions[b.id] ?? 99),
+      ),
+    );
+  }, [positions, players]);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -126,20 +135,27 @@ export default function SetPositions({
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
     if (over && active.id !== over.id) {
-      setOrdered((items) => {
-        const oldIndex = items.findIndex((p) => p.id === active.id);
-        const newIndex = items.findIndex((p) => p.id === over.id);
-        return arrayMove(items, oldIndex, newIndex);
+      const oldIndex = ordered.findIndex((p) => p.id === active.id);
+      const newIndex = ordered.findIndex((p) => p.id === over.id);
+      const newOrdered = arrayMove(ordered, oldIndex, newIndex);
+      setOrdered(newOrdered);
+      // Persist new order to Firestore for real-time sync
+      const newPositions: Record<string, number> = {};
+      newOrdered.forEach((player, index) => {
+        newPositions[player.id] = index + 1;
       });
+      setAllPositions(draftId, newPositions);
     }
   }
 
-  function handleNext() {
-    const positions: Record<string, number> = {};
+  async function handleNext() {
+    // Ensure positions are written before advancing step
+    const newPositions: Record<string, number> = {};
     ordered.forEach((player, index) => {
-      positions[player.id] = index + 1;
+      newPositions[player.id] = index + 1;
     });
-    onNext(positions);
+    await setAllPositions(draftId, newPositions);
+    onNext();
   }
 
   return (

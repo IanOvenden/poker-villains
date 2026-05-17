@@ -12,7 +12,14 @@ import {
   orderBy,
 } from "firebase/firestore";
 import { db } from "./firebase";
-import type { Season, Player, Game, PlayerStats, SessionOverride } from "@/types";
+import type {
+  Season,
+  Player,
+  Game,
+  PlayerStats,
+  SessionOverride,
+  DraftGame,
+} from "@/types";
 
 const BUYIN = 10;
 
@@ -41,7 +48,7 @@ export async function createSeason(number: number): Promise<Season> {
 export async function setSessionOverride(
   seasonId: string,
   sessionIndex: number,
-  override: SessionOverride
+  override: SessionOverride,
 ): Promise<void> {
   await updateDoc(doc(db, "seasons", seasonId), {
     [`sessionOverrides.${sessionIndex}`]: override,
@@ -50,7 +57,7 @@ export async function setSessionOverride(
 
 export async function removeSessionOverride(
   seasonId: string,
-  sessionIndex: number
+  sessionIndex: number,
 ): Promise<void> {
   await updateDoc(doc(db, "seasons", seasonId), {
     [`sessionOverrides.${sessionIndex}`]: deleteField(),
@@ -227,4 +234,42 @@ export async function getPlayerByAuthUid(uid: string): Promise<Player | null> {
   const snapshot = await getDocs(q);
   if (snapshot.empty) return null;
   return { id: snapshot.docs[0].id, ...snapshot.docs[0].data() } as Player;
+}
+
+// --- Draft Games ---
+
+export async function getActiveDraft(): Promise<DraftGame | null> {
+  const snapshot = await getDocs(collection(db, "draft_games"));
+  if (snapshot.empty) return null;
+  const docSnap = snapshot.docs[0];
+  return { id: docSnap.id, ...docSnap.data() } as DraftGame;
+}
+
+export async function getDraftGame(id: string): Promise<DraftGame | null> {
+  const docSnap = await getDoc(doc(db, "draft_games", id));
+  if (!docSnap.exists()) return null;
+  return { id: docSnap.id, ...docSnap.data() } as DraftGame;
+}
+
+export async function createDraftGame(
+  seasonId: string,
+  createdBy: string,
+): Promise<DraftGame> {
+  const data = {
+    seasonId,
+    createdAt: new Date().toISOString(),
+    createdBy,
+    step: "select" as const,
+    selectedPlayerIds: [],
+    knockouts: {},
+    eliminationOrder: [],
+    positions: {},
+    presence: {},
+  };
+  const ref = await addDoc(collection(db, "draft_games"), data);
+  return { id: ref.id, ...data };
+}
+
+export async function deleteDraftGame(draftId: string): Promise<void> {
+  await deleteDoc(doc(db, "draft_games", draftId));
 }
