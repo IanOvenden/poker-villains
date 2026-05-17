@@ -1,6 +1,12 @@
 import Link from "next/link";
-import { getActiveSeason, getGamesBySeason, getPlayers } from "@/lib/firestore";
+import {
+  getActiveSeason,
+  getGamesBySeason,
+  getPlayers,
+  getActiveDraft,
+} from "@/lib/firestore";
 import { DeleteGameButton } from "@/components/DeleteGameButton";
+import GamesHeader from "@/components/GamesHeader";
 import type { Game, Player } from "@/types";
 
 function formatDate(iso: string) {
@@ -20,30 +26,19 @@ function getWinner(game: Game, players: Player[]) {
 
 export default async function GamesPage() {
   const season = await getActiveSeason();
-  const [games, players] = await Promise.all([
+  const [games, players, activeDraft] = await Promise.all([
     season ? getGamesBySeason(season.id) : Promise.resolve([]),
     getPlayers(),
+    getActiveDraft(),
   ]);
 
   return (
     <div className="pt-6">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-medium text-text-primary">Games</h1>
-          <h2 className="text-lg font-medium text-accent mt-0.5">
-            Season {season?.number}
-          </h2>
-          <p className="text-text-secondary text-sm mt-0.5">
-            {season?.gameCount ?? 0} of 30 games played
-          </p>
-        </div>
-        <Link
-          href="/games/log"
-          className="bg-accent text-white px-4 py-2 rounded-xl text-sm font-medium"
-        >
-          + Log game
-        </Link>
-      </div>
+      <GamesHeader
+        initialDraft={activeDraft}
+        season={season}
+        gameCount={season?.gameCount ?? 0}
+      />
 
       <div className="flex flex-col gap-3">
         {games.length === 0 ? (

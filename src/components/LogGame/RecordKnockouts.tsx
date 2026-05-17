@@ -1,35 +1,31 @@
 "use client";
 
 import { useState } from "react";
+import { recordKnockout } from "@/lib/draftGame";
 import type { Player } from "@/types";
 
 interface Props {
   players: Player[];
-  initialKnockouts: Record<string, string[]>;
-  onNext: (knockouts: Record<string, string[]>) => void;
+  knockouts: Record<string, string[]>;
+  draftId: string;
+  onNext: () => void;
   onBack: () => void;
 }
 
 export default function RecordKnockouts({
   players,
-  initialKnockouts,
+  knockouts,
+  draftId,
   onNext,
   onBack,
 }: Props) {
-  const [knockouts, setKnockouts] =
-    useState<Record<string, string[]>>(initialKnockouts);
   const [activePlayer, setActivePlayer] = useState<string | null>(null);
 
   const knockedOutPlayerIds = new Set(Object.values(knockouts).flat());
 
-  function toggleKnockout(knockerId: string, victimId: string) {
-    setKnockouts((prev) => {
-      const current = prev[knockerId] || [];
-      const updated = current.includes(victimId)
-        ? current.filter((id) => id !== victimId)
-        : [...current, victimId];
-      return { ...prev, [knockerId]: updated };
-    });
+  async function toggleKnockout(knockerId: string, victimId: string) {
+    const current = knockouts[knockerId] || [];
+    await recordKnockout(draftId, knockerId, current, victimId);
   }
 
   const totalKnockouts = Object.values(knockouts).reduce(
@@ -40,7 +36,7 @@ export default function RecordKnockouts({
   const allAllocated = totalKnockouts === requiredKnockouts;
 
   function handleNext() {
-    onNext(knockouts);
+    onNext();
   }
 
   return (

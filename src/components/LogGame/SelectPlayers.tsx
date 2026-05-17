@@ -1,34 +1,32 @@
 "use client";
 
-import { useState } from "react";
+import {
+  addPlayerToSelection,
+  removePlayerFromSelection,
+} from "@/lib/draftGame";
 import type { Player } from "@/types";
 
 interface Props {
   players: Player[];
-  initialSelected: Player[];
-  onNext: (selected: Player[]) => void;
+  selectedPlayerIds: string[];
+  draftId: string;
+  onNext: () => void;
 }
 
 export default function SelectPlayers({
   players,
-  initialSelected,
+  selectedPlayerIds,
+  draftId,
   onNext,
 }: Props) {
-  const [selected, setSelected] = useState<Set<string>>(
-    new Set(initialSelected.map((p) => p.id)),
-  );
+  const selected = new Set(selectedPlayerIds);
 
-  function toggle(id: string) {
-    setSelected((prev) => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
-  }
-
-  function handleNext() {
-    const selectedPlayers = players.filter((p) => selected.has(p.id));
-    onNext(selectedPlayers);
+  async function toggle(id: string) {
+    if (selected.has(id)) {
+      await removePlayerFromSelection(draftId, id);
+    } else {
+      await addPlayerToSelection(draftId, id);
+    }
   }
 
   return (
@@ -57,7 +55,7 @@ export default function SelectPlayers({
       </div>
 
       <button
-        onClick={handleNext}
+        onClick={onNext}
         disabled={selected.size < 2}
         className="w-full py-4 bg-accent text-white rounded-2xl font-medium disabled:opacity-40 transition-opacity"
       >

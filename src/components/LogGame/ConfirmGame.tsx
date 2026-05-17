@@ -2,28 +2,29 @@
 
 import { processGame } from "@/lib/pointsEngine";
 import type { Player } from "@/types";
-import type { LogGameState } from "./LogGameStepper";
 import type { GamePlayer } from "@/lib/pointsEngine";
 
 interface Props {
-  state: LogGameState;
-  players: Player[];
+  selectedPlayers: Player[];
+  knockouts: Record<string, string[]>;
+  positions: Record<string, number>;
   isSaving: boolean;
   onConfirm: () => void;
   onBack: () => void;
 }
 
 export default function ConfirmGame({
-  state,
-  players,
+  selectedPlayers,
+  knockouts,
+  positions,
   isSaving,
   onConfirm,
   onBack,
 }: Props) {
-  const gamePlayers: GamePlayer[] = players.map((p) => ({
+  const gamePlayers: GamePlayer[] = selectedPlayers.map((p) => ({
     playerId: p.id,
-    position: state.positions[p.id],
-    knockouts: state.knockouts[p.id] || [],
+    position: positions[p.id],
+    knockouts: knockouts[p.id] || [],
   }));
 
   const summary = processGame(gamePlayers);
@@ -33,7 +34,7 @@ export default function ConfirmGame({
   );
 
   function getPlayerName(id: string) {
-    return players.find((p) => p.id === id)?.name ?? id;
+    return selectedPlayers.find((p) => p.id === id)?.name ?? id;
   }
 
   const positionLabels: Record<number, string> = {
