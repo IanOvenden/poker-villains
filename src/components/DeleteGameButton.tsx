@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { deleteGameAction } from "@/app/actions/games";
+import { deleteGame } from "@/lib/firestore";
 
 interface DeleteGameButtonProps {
   gameId: string;
@@ -28,7 +28,7 @@ export function DeleteGameButton({
 
     setLoading(true);
     try {
-      await deleteGameAction(gameId);
+      await deleteGame(gameId);
       if (redirectAfter) {
         router.push("/games");
         router.refresh();

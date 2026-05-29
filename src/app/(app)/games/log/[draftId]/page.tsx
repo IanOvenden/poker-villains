@@ -1,20 +1,48 @@
-import { redirect } from "next/navigation";
+"use client";
+
+import { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
 import { getDraftGame, getPlayers } from "@/lib/firestore";
 import LogGameStepper from "@/components/LogGame/LogGameStepper";
+import type { Player, DraftGame } from "@/types";
 
-interface Props {
-  params: Promise<{ draftId: string }>;
-}
+export default function DraftGamePage() {
+  const { draftId } = useParams<{ draftId: string }>();
+  const router = useRouter();
+  const [draft, setDraft] = useState<DraftGame | null>(null);
+  const [allPlayers, setAllPlayers] = useState<Player[]>([]);
+  const [loading, setLoading] = useState(true);
 
-export default async function DraftGamePage({ params }: Props) {
-  const { draftId } = await params;
+  useEffect(() => {
+    async function load() {
+      try {
+        const [draftData, playersData] = await Promise.all([
+          getDraftGame(draftId),
+          getPlayers(),
+        ]);
+        if (!draftData) {
+          router.replace("/games");
+          return;
+        }
+        setDraft(draftData);
+        setAllPlayers(playersData);
+      } catch (err) {
+        console.error("Error loading draft:", err);
+        router.replace("/games");
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, [draftId, router]);
 
-  const [draft, allPlayers] = await Promise.all([
-    getDraftGame(draftId),
-    getPlayers(),
-  ]);
-
-  if (!draft) redirect("/games");
+  if (loading || !draft) {
+    return (
+      <div className="flex items-center justify-center pt-20">
+        <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <LogGameStepper

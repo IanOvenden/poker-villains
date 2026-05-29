@@ -1,6 +1,10 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { getActiveSeason, getSeasonStandings } from "@/lib/firestore";
 import PostponeSchedule from "@/components/PostponeSchedule";
 import { buildSchedule } from "@/lib/schedule";
+import type { Season, PlayerStats } from "@/types";
 
 const GAMES_IN_SEASON = 30;
 const BUYIN = 10;
@@ -9,9 +13,36 @@ function formatCurrency(amount: number) {
   return `£${amount.toFixed(2)}`;
 }
 
-export default async function SeasonPage() {
-  const season = await getActiveSeason();
-  const standings = season ? await getSeasonStandings(season.id) : [];
+export default function SeasonPage() {
+  const [season, setSeason] = useState<Season | null>(null);
+  const [standings, setStandings] = useState<PlayerStats[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const activeSeason = await getActiveSeason();
+        setSeason(activeSeason);
+        if (activeSeason) {
+          const standingsData = await getSeasonStandings(activeSeason.id);
+          setStandings(standingsData);
+        }
+      } catch (err) {
+        console.error("Error loading season:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center pt-20">
+        <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   const gamesPlayed = season?.gameCount ?? 0;
   const gamesRemaining = GAMES_IN_SEASON - gamesPlayed;
@@ -27,7 +58,12 @@ export default async function SeasonPage() {
 
   const progressPct = Math.round((gamesPlayed / GAMES_IN_SEASON) * 100);
   const sessionCount = season?.startDate
-    ? buildSchedule(season.startDate, gamesPlayed, GAMES_IN_SEASON, season.sessionOverrides).length
+    ? buildSchedule(
+        season.startDate,
+        gamesPlayed,
+        GAMES_IN_SEASON,
+        season.sessionOverrides,
+      ).length
     : GAMES_IN_SEASON / 2;
 
   return (
