@@ -1,16 +1,48 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { getPlayers, getActiveSeason, getPlayerStats } from "@/lib/firestore";
 import VillainAvatar from "@/components/VillainAvatar";
+import type { Player, Season, PlayerStats } from "@/types";
 
-export default async function PlayersPage() {
-  const [players, season] = await Promise.all([
-    getPlayers(),
-    getActiveSeason(),
-  ]);
+export default function PlayersPage() {
+  const [players, setPlayers] = useState<Player[]>([]);
+  const [season, setSeason] = useState<Season | null>(null);
+  const [stats, setStats] = useState<(PlayerStats | null)[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const stats = season
-    ? await Promise.all(players.map((p) => getPlayerStats(p.id, season.id)))
-    : [];
+  useEffect(() => {
+    async function load() {
+      try {
+        const [playersData, seasonData] = await Promise.all([
+          getPlayers(),
+          getActiveSeason(),
+        ]);
+        setPlayers(playersData);
+        setSeason(seasonData);
+        if (seasonData) {
+          const statsData = await Promise.all(
+            playersData.map((p) => getPlayerStats(p.id, seasonData.id)),
+          );
+          setStats(statsData);
+        }
+      } catch (err) {
+        console.error("Error loading players:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center pt-20">
+        <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="pt-6">

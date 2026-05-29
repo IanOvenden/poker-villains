@@ -12,7 +12,9 @@ import {
   removePresence,
   deleteDraftClient,
 } from "@/lib/draftGame";
-import { confirmDraftGameAction } from "@/app/actions/games";
+import { saveGame, deleteDraftGame, getDraftGame } from "@/lib/firestore";
+import { processGame } from "@/lib/pointsEngine";
+import type { GamePlayer } from "@/lib/pointsEngine";
 import type { Player, DraftGame } from "@/types";
 import SelectPlayers from "./SelectPlayers";
 import RecordKnockouts from "./RecordKnockouts";
@@ -84,7 +86,25 @@ export default function LogGameStepper({
     if (isSaving) return;
     setIsSaving(true);
     try {
-      await confirmDraftGameAction(draftId);
+      const currentDraft = await getDraftGame(draftId);
+      if (!currentDraft) throw new Error("Draft not found");
+      const gamePlayers: GamePlayer[] = currentDraft.selectedPlayerIds.map(
+        (pid) => ({
+          playerId: pid,
+          position: currentDraft.positions[pid],
+          knockouts: currentDraft.knockouts[pid] || [],
+        }),
+      );
+      const summary = processGame(gamePlayers);
+      await saveGame({
+        seasonId: currentDraft.seasonId,
+        date: new Date().toISOString(),
+        playerCount: currentDraft.selectedPlayerIds.length,
+        potTotal: summary.potTotal,
+        seasonPotContribution: summary.seasonPotContribution,
+        results: summary.results,
+      });
+      await deleteDraftGame(draftId);
       router.replace("/games");
       router.refresh();
     } catch (err) {

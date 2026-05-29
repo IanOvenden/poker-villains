@@ -3,7 +3,11 @@
 import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import { getOrCreateDraftAction } from "@/app/actions/games";
+import {
+  getActiveDraft,
+  getActiveSeason,
+  createDraftGame,
+} from "@/lib/firestore";
 
 export default function LogGamePage() {
   const { player, loading } = useAuth();
@@ -16,9 +20,15 @@ export default function LogGamePage() {
     hasRun.current = true;
 
     async function redirectToDraft() {
-      const result = await getOrCreateDraftAction(player!.id);
-      if (!result) return;
-      router.replace(`/games/log/${result.draftId}`);
+      const existing = await getActiveDraft();
+      if (existing) {
+        router.replace(`/games/log/${existing.id}`);
+        return;
+      }
+      const season = await getActiveSeason();
+      if (!season) return;
+      const draft = await createDraftGame(season.id, player!.id);
+      router.replace(`/games/log/${draft.id}`);
     }
 
     redirectToDraft();

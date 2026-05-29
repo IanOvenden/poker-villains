@@ -1,12 +1,16 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useParams, useSearchParams, useRouter } from "next/navigation";
+import Link from "next/link";
 import {
   getPlayer,
   getActiveSeason,
   getPlayerStats,
   getGamesBySeason,
 } from "@/lib/firestore";
-import { notFound } from "next/navigation";
-import Link from "next/link";
 import VillainAvatar from "@/components/VillainAvatar";
+import type { Player, Season, PlayerStats, Game } from "@/types";
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("en-GB", {
@@ -16,29 +20,63 @@ function formatDate(iso: string) {
   });
 }
 
-export default async function PlayerDetailPage({
-  params,
-  searchParams,
-}: {
-  params: Promise<{ id: string }>;
-  searchParams: Promise<{ from?: string }>;
-}) {
-  const { id } = await params;
-  const { from } = await searchParams;
+export default function PlayerDetailPage() {
+  const { id } = useParams<{ id: string }>();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const from = searchParams.get("from");
   const backHref = from === "standings" ? "/standings" : "/players";
   const backLabel = from === "standings" ? "Standings" : "Players";
-  const season = await getActiveSeason();
-  const [player, stats] = await Promise.all([
-    getPlayer(id),
-    season ? getPlayerStats(id, season.id) : Promise.resolve(null),
-  ]);
 
-  if (!player) notFound();
+  const [player, setPlayer] = useState<Player | null>(null);
+  const [season, setSeason] = useState<Season | null>(null);
+  const [stats, setStats] = useState<PlayerStats | null>(null);
+  const [playerGames, setPlayerGames] = useState<Game[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const games = season ? await getGamesBySeason(season.id) : [];
-  const playerGames = games
-    .filter((g) => g.results.some((r) => r.playerId === id))
-    .slice(0, 5);
+  useEffect(() => {
+    async function load() {
+      try {
+        const [playerData, seasonData] = await Promise.all([
+          getPlayer(id),
+          getActiveSeason(),
+        ]);
+        if (!playerData) {
+          router.replace("/players");
+          return;
+        }
+        setPlayer(playerData);
+        setSeason(seasonData);
+        if (seasonData) {
+          const [statsData, gamesData] = await Promise.all([
+            getPlayerStats(id, seasonData.id),
+            getGamesBySeason(seasonData.id),
+          ]);
+          setStats(statsData);
+          setPlayerGames(
+            gamesData
+              .filter((g) => g.results.some((r) => r.playerId === id))
+              .slice(0, 5),
+          );
+        }
+      } catch (err) {
+        console.error("Error loading player:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, [id, router]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center pt-20">
+        <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!player) return null;
 
   return (
     <div className="pt-6">

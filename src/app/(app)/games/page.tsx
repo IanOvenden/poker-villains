@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   getActiveSeason,
@@ -7,7 +10,7 @@ import {
 } from "@/lib/firestore";
 import { DeleteGameButton } from "@/components/DeleteGameButton";
 import GamesHeader from "@/components/GamesHeader";
-import type { Game, Player } from "@/types";
+import type { Game, Player, Season, DraftGame } from "@/types";
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("en-GB", {
@@ -24,13 +27,44 @@ function getWinner(game: Game, players: Player[]) {
   return players.find((p) => p.id === winnerResult.playerId);
 }
 
-export default async function GamesPage() {
-  const season = await getActiveSeason();
-  const [games, players, activeDraft] = await Promise.all([
-    season ? getGamesBySeason(season.id) : Promise.resolve([]),
-    getPlayers(),
-    getActiveDraft(),
-  ]);
+export default function GamesPage() {
+  const [season, setSeason] = useState<Season | null>(null);
+  const [games, setGames] = useState<Game[]>([]);
+  const [players, setPlayers] = useState<Player[]>([]);
+  const [activeDraft, setActiveDraft] = useState<DraftGame | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const activeSeason = await getActiveSeason();
+        setSeason(activeSeason);
+        const [gamesData, playersData, draftData] = await Promise.all([
+          activeSeason
+            ? getGamesBySeason(activeSeason.id)
+            : Promise.resolve([]),
+          getPlayers(),
+          getActiveDraft(),
+        ]);
+        setGames(gamesData);
+        setPlayers(playersData);
+        setActiveDraft(draftData);
+      } catch (err) {
+        console.error("Error loading games:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center pt-20">
+        <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="pt-6">
