@@ -8,12 +8,14 @@ interface DeleteGameButtonProps {
   gameId: string;
   redirectAfter?: boolean;
   className?: string;
+  onDeleted?: () => void;
 }
 
 export function DeleteGameButton({
   gameId,
   redirectAfter = false,
   className = "",
+  onDeleted,
 }: DeleteGameButtonProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -29,6 +31,7 @@ export function DeleteGameButton({
     setLoading(true);
     try {
       await deleteGame(gameId);
+      onDeleted?.();
       if (redirectAfter) {
         router.push("/games");
         router.refresh();
@@ -45,6 +48,7 @@ export function DeleteGameButton({
       onClick={handleDelete}
       disabled={loading}
       aria-label="Delete game"
+      type="button"
       className={`text-danger cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
     >
       {loading ? (

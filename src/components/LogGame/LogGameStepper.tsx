@@ -74,8 +74,15 @@ export default function LogGameStepper({
     };
   }, [draftId, player]);
 
-  // While draft is null the navigation effect above is running — render nothing
-  if (!draft) return null;
+  // While draft is null the navigation effect above is running, show a loading state
+  // instead of rendering nothing so the user never sees a blank screen.
+  if (!draft) {
+    return (
+      <div className="flex items-center justify-center pt-20">
+        <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   const stepIndex = STEPS.indexOf(draft.step);
   const selectedPlayers = allPlayers.filter((p) =>
@@ -217,6 +224,7 @@ export default function LogGameStepper({
       <button
         onClick={handleCancel}
         disabled={isDiscarding || isSaving}
+        type="button"
         className="mt-6 w-full py-3 text-sm text-text-secondary border border-gray-200 rounded-2xl disabled:opacity-40"
       >
         {isDiscarding ? "Discarding…" : "Discard game"}
