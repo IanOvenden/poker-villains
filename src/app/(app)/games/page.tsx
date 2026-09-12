@@ -10,6 +10,7 @@ import {
 } from "@/lib/firestore";
 import { DeleteGameButton } from "@/components/DeleteGameButton";
 import GamesHeader from "@/components/GamesHeader";
+import { removeGameFromList } from "@/lib/gameList";
 import type { Game, Player, Season, DraftGame } from "@/types";
 
 function formatDate(iso: string) {
@@ -71,7 +72,7 @@ export default function GamesPage() {
       <GamesHeader
         initialDraft={activeDraft}
         season={season}
-        gameCount={season?.gameCount ?? 0}
+        gameCount={games.length}
       />
 
       <div className="flex flex-col gap-3">
@@ -116,7 +117,15 @@ export default function GamesPage() {
                     </div>
                   </div>
                 </Link>
-                <DeleteGameButton gameId={game.id} className="shrink-0 p-1" />
+                <DeleteGameButton
+                  gameId={game.id}
+                  className="shrink-0 p-1"
+                  onDeleted={() =>
+                    setGames((currentGames) =>
+                      removeGameFromList(currentGames, game.id),
+                    )
+                  }
+                />
               </div>
             );
           })
