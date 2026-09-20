@@ -12,6 +12,7 @@ const navItems = [
   { href: "/games", label: "Games" },
   { href: "/players", label: "Players" },
   { href: "/season", label: "Season" },
+  { href: "/seasons", label: "Hall of Fame" },
 ];
 
 export default function SlideMenu() {
@@ -33,6 +34,7 @@ export default function SlideMenu() {
           onClick={() => setIsOpen(true)}
           className="w-10 h-10 flex flex-col justify-center gap-1.5 items-start"
           aria-label="Open menu"
+          type="button"
         >
           <span className="w-6 h-0.5 bg-white rounded-full" />
           <span className="w-4 h-0.5 bg-white rounded-full" />
@@ -55,10 +57,12 @@ export default function SlideMenu() {
 
       {/* Overlay */}
       {isOpen && (
-        <div
-          className="fixed inset-0 z-50 bg-black/40"
-          onClick={() => setIsOpen(false)}
-        />
+        <button
+  type="button"
+  aria-label="Close menu overlay"
+  onClick={() => setIsOpen(false)}
+  className="fixed inset-0 z-50 bg-black/40"
+ />
       )}
 
       {/* Drawer */}
@@ -73,6 +77,7 @@ export default function SlideMenu() {
             onClick={() => setIsOpen(false)}
             className="w-10 h-10 flex items-center justify-center text-text-secondary"
             aria-label="Close menu"
+            type="button"
           >
             ✕
           </button>
@@ -121,6 +126,7 @@ export default function SlideMenu() {
           <button
             onClick={handleSignOut}
             className="px-4 py-3 rounded-xl text-sm font-medium text-danger text-left hover:bg-gray-50 transition-colors"
+            type="button"
           >
             Sign out
           </button>
