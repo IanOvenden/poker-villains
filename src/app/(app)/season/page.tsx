@@ -1,9 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { getActiveSeason, getSeasonStandings } from "@/lib/firestore";
+import { useCallback, useEffect, useState } from "react";
+import {
+  createNextSeason,
+  finalizeSeason,
+  getActiveSeason,
+  getSeasonStandings,
+} from "@/lib/firestore";
 import PostponeSchedule from "@/components/PostponeSchedule";
 import { buildSchedule } from "@/lib/schedule";
+import { canFinalizeSeason } from "@/lib/seasonLifecycle";
 import type { Season, PlayerStats } from "@/types";
 
 const GAMES_IN_SEASON = 30;
@@ -17,24 +23,71 @@ export default function SeasonPage() {
   const [season, setSeason] = useState<Season | null>(null);
   const [standings, setStandings] = useState<PlayerStats[]>([]);
   const [loading, setLoading] = useState(true);
+  const [actionState, setActionState] = useState<{
+    type: "finalize" | "next" | null;
+    loading: boolean;
+    error: string | null;
+  }>({ type: null, loading: false, error: null });
+
+  const load = useCallback(async () => {
+    try {
+      const activeSeason = await getActiveSeason();
+      setSeason(activeSeason);
+      if (activeSeason) {
+        const standingsData = await getSeasonStandings(activeSeason.id);
+        setStandings(standingsData);
+      }
+    } catch (err) {
+      console.error("Error loading season:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    async function load() {
-      try {
-        const activeSeason = await getActiveSeason();
-        setSeason(activeSeason);
-        if (activeSeason) {
-          const standingsData = await getSeasonStandings(activeSeason.id);
-          setStandings(standingsData);
-        }
-      } catch (err) {
-        console.error("Error loading season:", err);
-      } finally {
-        setLoading(false);
-      }
+    void load();
+  }, [load]);
+
+  async function handleFinalizeSeason() {
+    if (!season) return;
+    setActionState({ type: "finalize", loading: true, error: null });
+
+    try {
+      await finalizeSeason(season.id);
+      await load();
+    } catch (err) {
+      console.error("Error finalizing season:", err);
+      setActionState({
+        type: "finalize",
+        loading: false,
+        error: err instanceof Error ? err.message : "Failed to finalize season.",
+      });
+      return;
     }
-    load();
-  }, []);
+
+    setActionState({ type: null, loading: false, error: null });
+  }
+
+  async function handleCreateNextSeason() {
+    setActionState({ type: "next", loading: true, error: null });
+
+    try {
+      const nextSeason = await createNextSeason();
+      setSeason(nextSeason);
+      const standingsData = await getSeasonStandings(nextSeason.id);
+      setStandings(standingsData);
+    } catch (err) {
+      console.error("Error creating next season:", err);
+      setActionState({
+        type: "next",
+        loading: false,
+        error: err instanceof Error ? err.message : "Failed to start next season.",
+      });
+      return;
+    }
+
+    setActionState({ type: null, loading: false, error: null });
+  }
 
   if (loading) {
     return (
@@ -44,8 +97,32 @@ export default function SeasonPage() {
     );
   }
 
-  const gamesPlayed = season?.gameCount ?? 0;
+  if (!season) {
+    return (
+      <div className="flex items-center justify-center pt-20">
+        <div className="w-full max-w-md rounded-2xl border border-gray-100 bg-surface p-6 text-center">
+          <h1 className="text-2xl font-medium text-text-primary">No active season</h1>
+          <p className="mt-2 text-sm text-text-secondary">
+            Start the next season to begin tracking standings, games, and payouts.
+          </p>
+          <button
+            type="button"
+            onClick={handleCreateNextSeason}
+            disabled={actionState.loading}
+            className="mt-4 w-full rounded-xl bg-accent px-4 py-2 text-sm font-medium text-white disabled:opacity-60"
+          >
+            {actionState.loading && actionState.type === "next"
+              ? "Starting season..."
+              : "Start next season"}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const gamesPlayed = season.gameCount;
   const gamesRemaining = GAMES_IN_SEASON - gamesPlayed;
+  const canFinalize = canFinalizeSeason(season, GAMES_IN_SEASON);
   const potTotal = season?.potTotal ?? 0;
   const projectedPot = potTotal + gamesRemaining * BUYIN * 0.2 * 6;
 
@@ -77,6 +154,38 @@ export default function SeasonPage() {
           {gamesPlayed} of {GAMES_IN_SEASON} games played
         </p>
       </div>
+
+      {season && canFinalize && (
+        <div className="mb-4 flex gap-3">
+          <button
+            type="button"
+            onClick={handleFinalizeSeason}
+            disabled={actionState.loading}
+            className="flex-1 rounded-xl bg-accent text-white px-3 py-2 text-sm font-medium disabled:opacity-60"
+          >
+            {actionState.loading && actionState.type === "finalize"
+              ? "Finalizing..."
+              : "Finalize season"}
+          </button>
+
+          <button
+            type="button"
+            onClick={handleCreateNextSeason}
+            disabled={actionState.loading}
+            className="flex-1 rounded-xl border border-gray-200 bg-surface px-3 py-2 text-sm font-medium text-text-primary disabled:opacity-60"
+          >
+            {actionState.loading && actionState.type === "next"
+              ? "Starting..."
+              : "Start next season"}
+          </button>
+        </div>
+      )}
+
+      {actionState.error && (
+        <p className="mb-4 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
+          {actionState.error}
+        </p>
+      )}
 
       {/* Progress bar */}
       <div className="bg-surface rounded-2xl p-4 border border-gray-100 mb-4">

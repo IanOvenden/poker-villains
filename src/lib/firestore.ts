@@ -12,6 +12,7 @@ import {
   orderBy,
 } from "firebase/firestore";
 import { db } from "./firebase";
+import { getNextSeasonNumber } from "./seasonLifecycle";
 import type {
   Season,
   Player,
@@ -26,14 +27,80 @@ const BUYIN = 10;
 // --- Seasons ---
 
 export async function getActiveSeason(): Promise<Season | null> {
-  const q = query(collection(db, "seasons"), where("status", "==", "active"));
+  const q = query(
+    collection(db, "seasons"),
+    where("status", "==", "active"),
+    orderBy("number", "desc"),
+  );
   const snapshot = await getDocs(q);
   if (snapshot.empty) return null;
   const docSnap = snapshot.docs[0];
   return { id: docSnap.id, ...docSnap.data() } as Season;
 }
 
+export async function getSeasonById(seasonId: string): Promise<Season | null> {
+  const docSnap = await getDoc(doc(db, "seasons", seasonId));
+  if (!docSnap.exists()) return null;
+  return { id: docSnap.id, ...docSnap.data() } as Season;
+}
+
+export async function getCompletedSeasons(): Promise<Season[]> {
+  const q = query(
+    collection(db, "seasons"),
+    where("status", "==", "complete"),
+    orderBy("number", "desc"),
+  );
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map(
+    (docSnap) => ({ id: docSnap.id, ...docSnap.data() }) as Season,
+  );
+}
+
+export async function getSeasonSummary(seasonId: string): Promise<{
+  season: Season | null;
+  standings: PlayerStats[];
+  games: Game[];
+  payouts: {
+    winnerName: string | null;
+    winnerPayout: number;
+    runnerUpName: string | null;
+    runnerUpPayout: number;
+  };
+} | null> {
+  const [season, games, standings] = await Promise.all([
+    getSeasonById(seasonId),
+    getGamesBySeason(seasonId),
+    getSeasonStandings(seasonId),
+  ]);
+
+  if (!season) return null;
+
+  const winner = standings[0] ?? null;
+  const runnerUp = standings[1] ?? null;
+  const totalPot = season.potTotal || 0;
+
+  return {
+    season,
+    games,
+    standings,
+    payouts: {
+      winnerName: winner?.name ?? null,
+      winnerPayout: totalPot * 0.75,
+      runnerUpName: runnerUp?.name ?? null,
+      runnerUpPayout: totalPot * 0.25,
+    },
+  };
+}
+
 export async function createSeason(number: number): Promise<Season> {
+  const activeSeasons = await getDocs(
+    query(collection(db, "seasons"), where("status", "==", "active")),
+  );
+
+  if (!activeSeasons.empty) {
+    throw new Error("A season is already active. Finish it before creating a new one.");
+  }
+
   const data = {
     number,
     status: "active",
@@ -43,6 +110,40 @@ export async function createSeason(number: number): Promise<Season> {
   };
   const ref = await addDoc(collection(db, "seasons"), data);
   return { id: ref.id, ...data } as Season;
+}
+
+export async function createNextSeason(): Promise<Season> {
+  const seasonsSnapshot = await getDocs(
+    query(collection(db, "seasons"), orderBy("number", "desc")),
+  );
+  const seasons = seasonsSnapshot.docs.map(
+    (docSnap) => ({ id: docSnap.id, ...(docSnap.data() as Partial<Season>) }) as Season,
+  );
+
+  if (seasons.some((season) => season.status === "active")) {
+    throw new Error("A season is already active. Finalize it before starting the next one.");
+  }
+
+  return createSeason(getNextSeasonNumber(seasons));
+}
+
+export async function finalizeSeason(seasonId: string): Promise<void> {
+  const seasonRef = doc(db, "seasons", seasonId);
+  const seasonSnap = await getDoc(seasonRef);
+
+  if (!seasonSnap.exists()) {
+    throw new Error("Season not found.");
+  }
+
+  const season = seasonSnap.data() as Season;
+  if (season.status === "complete") {
+    return;
+  }
+
+  await updateDoc(seasonRef, {
+    status: "complete",
+    endDate: new Date().toISOString(),
+  });
 }
 
 export async function setSessionOverride(
