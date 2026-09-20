@@ -1,6 +1,7 @@
 export interface SeasonLike {
   id?: string;
   number?: number;
+  gameCount?: number;
   status?: "active" | "complete";
 }
 
@@ -25,8 +26,9 @@ export function hasMultipleActiveSeasons(seasons: SeasonLike[]): boolean {
 }
 
 export function canFinalizeSeason(
-  season: Pick<SeasonLike, "gameCount">,
+  season: { gameCount?: number } | null | undefined,
   totalGames: number,
 ): boolean {
+  if (!season) return false;
   return Number(season.gameCount ?? 0) >= totalGames;
 }
