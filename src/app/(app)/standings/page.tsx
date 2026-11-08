@@ -2,25 +2,36 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { getActiveSeason, getSeasonStandings } from "@/lib/firestore";
+import {
+  getActiveSeason,
+  getReigningChampionId,
+  getSeasonStandings,
+} from "@/lib/firestore";
 import { getNextSession, formatSessionDate } from "@/lib/schedule";
 import type { SessionInfo } from "@/lib/schedule";
 import type { PlayerStats, Season } from "@/types";
+import ChampionCrown from "@/components/ChampionCrown";
 
 export default function StandingsPage() {
   const [season, setSeason] = useState<Season | null>(null);
   const [standings, setStandings] = useState<PlayerStats[]>([]);
+  const [reigningChampionId, setReigningChampionId] = useState<string | null>(
+    null,
+  );
   const [nextSession, setNextSession] = useState<SessionInfo | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function load() {
       try {
-        const activeSeason = await getActiveSeason();
+        const [activeSeason, championId] = await Promise.all([
+          getActiveSeason(),
+          getReigningChampionId(),
+        ]);
+        setReigningChampionId(championId);
         if (activeSeason) {
           setSeason(activeSeason);
-          const [data] = await Promise.all([getSeasonStandings(activeSeason.id)]);
-          setStandings(data);
+          setStandings(await getSeasonStandings(activeSeason.id));
           if (activeSeason.startDate) {
             setNextSession(
               getNextSession(activeSeason.startDate, activeSeason.gameCount, 30, activeSeason.sessionOverrides)
@@ -115,7 +126,18 @@ export default function StandingsPage() {
                 {index + 1}
               </span>
               <div className="flex-1">
-                <p className="font-medium text-text-primary">{player.name}</p>
+                <p className="flex items-center gap-1.5 font-medium text-text-primary">
+                  {player.name}
+                  {player.playerId === reigningChampionId && (
+                    <span
+                      aria-label="Current reigning champion"
+                      className="inline-flex text-amber-500"
+                      role="img"
+                    >
+                      <ChampionCrown className="h-4 w-4" />
+                    </span>
+                  )}
+                </p>
                 <p className="text-xs text-text-secondary mt-0.5">
                   {player.gamesPlayed} games · {player.wins} wins ·{" "}
                   {player.winRate}% win rate

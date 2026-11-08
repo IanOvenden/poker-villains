@@ -59,6 +59,14 @@ export async function getCompletedSeasons(): Promise<Season[]> {
   );
 }
 
+export async function getReigningChampionId(): Promise<string | null> {
+  const [season] = await getCompletedSeasons();
+  if (!season || (season.gameCount ?? 0) <= 0) return null;
+
+  const [winner] = await getSeasonStandings(season.id);
+  return winner?.playerId ?? null;
+}
+
 export async function getSeasonSummary(seasonId: string): Promise<{
   season: Season | null;
   standings: PlayerStats[];

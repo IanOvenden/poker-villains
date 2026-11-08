@@ -8,6 +8,7 @@ import {
   getActiveSeason,
   getPlayerStats,
   getGamesBySeason,
+  getReigningChampionId,
 } from "@/lib/firestore";
 import VillainAvatar from "@/components/VillainAvatar";
 import type { Player, Season, PlayerStats, Game } from "@/types";
@@ -32,15 +33,20 @@ export default function PlayerDetailPage() {
   const [season, setSeason] = useState<Season | null>(null);
   const [stats, setStats] = useState<PlayerStats | null>(null);
   const [playerGames, setPlayerGames] = useState<Game[]>([]);
+  const [reigningChampionId, setReigningChampionId] = useState<string | null>(
+    null,
+  );
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function load() {
       try {
-        const [playerData, seasonData] = await Promise.all([
+        const [playerData, seasonData, championId] = await Promise.all([
           getPlayer(id),
           getActiveSeason(),
+          getReigningChampionId(),
         ]);
+        setReigningChampionId(championId);
         if (!playerData) {
           router.replace("/players");
           return;
@@ -90,7 +96,11 @@ export default function PlayerDetailPage() {
       {/* Player header */}
       <div className="flex items-center gap-4 mb-6">
         {player.villainId ? (
-          <VillainAvatar villainId={player.villainId} size={64} />
+          <VillainAvatar
+            villainId={player.villainId}
+            size={64}
+            isChampion={player.id === reigningChampionId}
+          />
         ) : (
           <div className="w-16 h-16 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0">
             <span className="text-accent font-medium text-2xl">
