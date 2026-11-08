@@ -1,6 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useState,
+  useSyncExternalStore,
+} from "react";
+import type { FormEvent } from "react";
 import {
   createNextSeason,
   finalizeSeason,
@@ -15,13 +21,46 @@ import type { Season, PlayerStats } from "@/types";
 const GAMES_IN_SEASON = 30;
 const BUYIN = 10;
 
+function getLocalDateInputValue(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function subscribeToLocalDate() {
+  return () => {};
+}
+
+function getServerDateInputValue() {
+  return "";
+}
+
 function formatCurrency(amount: number) {
   return `£${amount.toFixed(2)}`;
+}
+
+async function fetchSeasonData(): Promise<{
+  season: Season | null;
+  standings: PlayerStats[];
+}> {
+  const season = await getActiveSeason();
+  const standings = season ? await getSeasonStandings(season.id) : [];
+  return { season, standings };
 }
 
 export default function SeasonPage() {
   const [season, setSeason] = useState<Season | null>(null);
   const [standings, setStandings] = useState<PlayerStats[]>([]);
+  const [selectedStartDate, setSelectedStartDate] = useState<string | null>(
+    null,
+  );
+  const todayDate = useSyncExternalStore(
+    subscribeToLocalDate,
+    () => getLocalDateInputValue(new Date()),
+    getServerDateInputValue,
+  );
+  const startDate = selectedStartDate ?? todayDate;
   const [loading, setLoading] = useState(true);
   const [actionState, setActionState] = useState<{
     type: "finalize" | "next" | null;
@@ -31,12 +70,9 @@ export default function SeasonPage() {
 
   const load = useCallback(async () => {
     try {
-      const activeSeason = await getActiveSeason();
-      setSeason(activeSeason);
-      if (activeSeason) {
-        const standingsData = await getSeasonStandings(activeSeason.id);
-        setStandings(standingsData);
-      }
+      const data = await fetchSeasonData();
+      setSeason(data.season);
+      setStandings(data.standings);
     } catch (err) {
       console.error("Error loading season:", err);
     } finally {
@@ -45,8 +81,25 @@ export default function SeasonPage() {
   }, []);
 
   useEffect(() => {
-    void load();
-  }, [load]);
+    let cancelled = false;
+
+    void fetchSeasonData()
+      .then((data) => {
+        if (cancelled) return;
+        setSeason(data.season);
+        setStandings(data.standings);
+      })
+      .catch((err: unknown) => {
+        if (!cancelled) console.error("Error loading season:", err);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   async function handleFinalizeSeason() {
     if (!season) return;
@@ -68,11 +121,12 @@ export default function SeasonPage() {
     setActionState({ type: null, loading: false, error: null });
   }
 
-  async function handleCreateNextSeason() {
+  async function handleCreateNextSeason(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
     setActionState({ type: "next", loading: true, error: null });
 
     try {
-      const nextSeason = await createNextSeason();
+      const nextSeason = await createNextSeason(startDate);
       setSeason(nextSeason);
       const standingsData = await getSeasonStandings(nextSeason.id);
       setStandings(standingsData);
@@ -105,16 +159,40 @@ export default function SeasonPage() {
           <p className="mt-2 text-sm text-text-secondary">
             Start the next season to begin tracking standings, games, and payouts.
           </p>
-          <button
-            type="button"
-            onClick={handleCreateNextSeason}
-            disabled={actionState.loading}
-            className="mt-4 w-full rounded-xl bg-accent px-4 py-2 text-sm font-medium text-white disabled:opacity-60"
-          >
-            {actionState.loading && actionState.type === "next"
-              ? "Starting season..."
-              : "Start next season"}
-          </button>
+          <form onSubmit={handleCreateNextSeason} className="mt-4 text-left">
+            <label
+              htmlFor="new-season-start-date"
+              className="mb-1.5 block text-sm font-medium text-text-primary"
+            >
+              Season start date
+            </label>
+            <input
+              id="new-season-start-date"
+              name="startDate"
+              type="date"
+              value={startDate}
+              onChange={(event) => setSelectedStartDate(event.target.value)}
+              required
+              className="min-h-12 w-full rounded-xl border border-gray-200 bg-surface px-3 text-base text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+            />
+            <button
+              type="submit"
+              disabled={actionState.loading}
+              className="mt-3 min-h-12 w-full rounded-xl bg-accent px-4 py-2 text-sm font-medium text-white disabled:opacity-60"
+            >
+              {actionState.loading && actionState.type === "next"
+                ? "Starting season..."
+                : "Start next season"}
+            </button>
+          </form>
+          {actionState.error && (
+            <p
+              role="alert"
+              className="mt-4 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-left text-xs text-red-700"
+            >
+              {actionState.error}
+            </p>
+          )}
         </div>
       </div>
     );
@@ -156,28 +234,46 @@ export default function SeasonPage() {
       </div>
 
       {season && canFinalize && (
-        <div className="mb-4 flex gap-3">
-          <button
-            type="button"
-            onClick={handleFinalizeSeason}
-            disabled={actionState.loading}
-            className="flex-1 rounded-xl bg-accent text-white px-3 py-2 text-sm font-medium disabled:opacity-60"
-          >
-            {actionState.loading && actionState.type === "finalize"
-              ? "Finalizing..."
-              : "Finalize season"}
-          </button>
+        <div className="mb-4">
+          <form onSubmit={handleCreateNextSeason}>
+            <label
+              htmlFor="next-season-start-date"
+              className="mb-1.5 block text-sm font-medium text-text-primary"
+            >
+              Next season start date
+            </label>
+            <input
+              id="next-season-start-date"
+              name="startDate"
+              type="date"
+              value={startDate}
+              onChange={(event) => setSelectedStartDate(event.target.value)}
+              required
+              className="min-h-12 w-full rounded-xl border border-gray-200 bg-surface px-3 text-base text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+            />
+            <div className="mt-3 flex gap-3">
+              <button
+                type="button"
+                onClick={handleFinalizeSeason}
+                disabled={actionState.loading}
+                className="flex-1 rounded-xl bg-accent px-3 py-2 text-sm font-medium text-white disabled:opacity-60"
+              >
+                {actionState.loading && actionState.type === "finalize"
+                  ? "Finalizing..."
+                  : "Finalize season"}
+              </button>
 
-          <button
-            type="button"
-            onClick={handleCreateNextSeason}
-            disabled={actionState.loading}
-            className="flex-1 rounded-xl border border-gray-200 bg-surface px-3 py-2 text-sm font-medium text-text-primary disabled:opacity-60"
-          >
-            {actionState.loading && actionState.type === "next"
-              ? "Starting..."
-              : "Start next season"}
-          </button>
+              <button
+                type="submit"
+                disabled={actionState.loading}
+                className="flex-1 rounded-xl border border-gray-200 bg-surface px-3 py-2 text-sm font-medium text-text-primary disabled:opacity-60"
+              >
+                {actionState.loading && actionState.type === "next"
+                  ? "Starting..."
+                  : "Start next season"}
+              </button>
+            </div>
+          </form>
         </div>
       )}
 

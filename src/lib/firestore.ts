@@ -12,7 +12,10 @@ import {
   orderBy,
 } from "firebase/firestore";
 import { db } from "./firebase";
-import { getNextSeasonNumber } from "./seasonLifecycle";
+import {
+  getNextSeasonNumber,
+  seasonStartDateFromInput,
+} from "./seasonLifecycle";
 import type {
   Season,
   Player,
@@ -92,7 +95,10 @@ export async function getSeasonSummary(seasonId: string): Promise<{
   };
 }
 
-export async function createSeason(number: number): Promise<Season> {
+export async function createSeason(
+  number: number,
+  startDate = new Date().toISOString(),
+): Promise<Season> {
   const activeSeasons = await getDocs(
     query(collection(db, "seasons"), where("status", "==", "active")),
   );
@@ -106,13 +112,17 @@ export async function createSeason(number: number): Promise<Season> {
     status: "active",
     gameCount: 0,
     potTotal: 0,
-    startDate: new Date().toISOString(),
+    startDate,
   };
   const ref = await addDoc(collection(db, "seasons"), data);
   return { id: ref.id, ...data } as Season;
 }
 
-export async function createNextSeason(): Promise<Season> {
+export async function createNextSeason(startDate?: string): Promise<Season> {
+  const seasonStartDate =
+    startDate === undefined
+      ? new Date().toISOString()
+      : seasonStartDateFromInput(startDate);
   const seasonsSnapshot = await getDocs(
     query(collection(db, "seasons"), orderBy("number", "desc")),
   );
@@ -124,7 +134,7 @@ export async function createNextSeason(): Promise<Season> {
     throw new Error("A season is already active. Finalize it before starting the next one.");
   }
 
-  return createSeason(getNextSeasonNumber(seasons));
+  return createSeason(getNextSeasonNumber(seasons), seasonStartDate);
 }
 
 export async function finalizeSeason(seasonId: string): Promise<void> {
