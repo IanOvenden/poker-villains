@@ -42,8 +42,6 @@ Player insights
 Reminder notifications?
 Paid status?
 Unit tests
-Identifying existing champion
-Historical seasons
 Stats section
 Log player position for each game?
 Session payments
