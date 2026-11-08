@@ -37,11 +37,12 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 
 ## TODO
 
-Ability to see third place finishes and first out
-Player insights
-Reminder notifications?
-Paid status?
-Unit tests
-Stats section
-Log player position for each game?
-Session payments
+- Ability to see third place finishes and first out
+- Player insights
+- Reminder notifications?
+- Paid status?
+- Unit tests
+- Stats section
+- Log player position for each game?
+- Session payments
+- Export data
