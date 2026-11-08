@@ -2,7 +2,12 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { getPlayers, getActiveSeason, getPlayerStats } from "@/lib/firestore";
+import {
+  getPlayers,
+  getActiveSeason,
+  getPlayerStats,
+  getReigningChampionId,
+} from "@/lib/firestore";
 import VillainAvatar from "@/components/VillainAvatar";
 import type { Player, Season, PlayerStats } from "@/types";
 
@@ -10,17 +15,22 @@ export default function PlayersPage() {
   const [players, setPlayers] = useState<Player[]>([]);
   const [season, setSeason] = useState<Season | null>(null);
   const [stats, setStats] = useState<(PlayerStats | null)[]>([]);
+  const [reigningChampionId, setReigningChampionId] = useState<string | null>(
+    null,
+  );
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function load() {
       try {
-        const [playersData, seasonData] = await Promise.all([
+        const [playersData, seasonData, championId] = await Promise.all([
           getPlayers(),
           getActiveSeason(),
+          getReigningChampionId(),
         ]);
         setPlayers(playersData);
         setSeason(seasonData);
+        setReigningChampionId(championId);
         if (seasonData) {
           const statsData = await Promise.all(
             playersData.map((p) => getPlayerStats(p.id, seasonData.id)),
@@ -66,7 +76,11 @@ export default function PlayersPage() {
               className="bg-surface rounded-2xl px-4 py-4 border border-gray-100 flex items-center gap-4"
             >
               {player.villainId ? (
-                <VillainAvatar villainId={player.villainId} size={48} />
+                <VillainAvatar
+                  villainId={player.villainId}
+                  size={48}
+                  isChampion={player.id === reigningChampionId}
+                />
               ) : (
                 <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0">
                   <span className="text-accent font-medium text-lg">

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import Link from "next/link";
 import { getPlayers, getSeasonSummary } from "@/lib/firestore";
 import type { Game, PlayerStats, Player, Season } from "@/types";
 
@@ -170,12 +171,16 @@ export default function SeasonDetailPage() {
                 ? players.find((player) => player.id === winnerResult.playerId)?.name ?? "Unknown"
                 : "—";
               return (
-                <div key={game.id} className="rounded-xl border border-gray-100 p-3">
+                <Link
+                  key={game.id}
+                  href={`/games/${game.id}`}
+                  className="block rounded-xl border border-gray-100 p-3 transition-colors hover:border-accent/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                >
                   <p className="text-sm font-medium text-text-primary">{formatDate(game.date)}</p>
                   <p className="text-xs text-text-secondary">
                     Winner: {winnerName} · {winnerResult?.prizeMoney ?? 0} prize
                   </p>
-                </div>
+                </Link>
               );
             })
           )}

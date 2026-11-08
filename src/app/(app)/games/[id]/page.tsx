@@ -3,10 +3,15 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { getGame, getPlayers, getGamesBySeason } from "@/lib/firestore";
+import {
+  getGame,
+  getPlayers,
+  getGamesBySeason,
+  getSeasonById,
+} from "@/lib/firestore";
 import { DeleteGameButton } from "@/components/DeleteGameButton";
 import { GameNav } from "@/components/GameNav";
-import type { Game, Player } from "@/types";
+import type { Game, Player, Season } from "@/types";
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("en-GB", {
@@ -27,6 +32,7 @@ export default function GameDetailPage() {
   const router = useRouter();
   const [game, setGame] = useState<Game | null>(null);
   const [players, setPlayers] = useState<Player[]>([]);
+  const [season, setSeason] = useState<Season | null>(null);
   const [seasonGames, setSeasonGames] = useState<Game[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -45,11 +51,14 @@ export default function GameDetailPage() {
         // even if this game belongs to a completed season rather than the active one.
         // getGamesBySeason returns date desc; reverse for chronological order so
         // game index 0 = oldest (Game 1) and index N-1 = newest (Game N).
-        const allSeasonGames = (
-          await getGamesBySeason(gameData.seasonId)
-        ).reverse();
+        const [seasonData, gamesData] = await Promise.all([
+          getSeasonById(gameData.seasonId),
+          getGamesBySeason(gameData.seasonId),
+        ]);
+        const allSeasonGames = gamesData.reverse();
         setGame(gameData);
         setPlayers(playersData);
+        setSeason(seasonData);
         setSeasonGames(allSeasonGames);
       } catch (err) {
         console.error("Error loading game:", err);
@@ -82,15 +91,20 @@ export default function GameDetailPage() {
   const sortedResults = [...game.results].sort(
     (a, b) => a.position - b.position,
   );
+  const isArchivedSeason = season?.status === "complete";
+  const gamesHref = isArchivedSeason ? `/seasons/${season.id}` : "/games";
+  const gamesLabel = isArchivedSeason
+    ? `← Season ${season.number} games`
+    : "← Games";
 
   return (
     <>
       <div className="pt-6 pb-24">
         <Link
-          href="/games"
+          href={gamesHref}
           className="text-text-secondary text-sm mb-6 flex items-center gap-1"
         >
-          ← Games
+          {gamesLabel}
         </Link>
 
         <div className="flex items-start justify-between mb-6">

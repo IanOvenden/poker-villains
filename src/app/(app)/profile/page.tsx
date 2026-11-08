@@ -2,7 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { getActiveSeason, getPlayerStats, updatePlayerVillain } from "@/lib/firestore";
+import {
+  getActiveSeason,
+  getPlayerStats,
+  getReigningChampionId,
+  updatePlayerVillain,
+} from "@/lib/firestore";
 import {
   updatePassword,
   EmailAuthProvider,
@@ -19,8 +24,9 @@ export default function ProfilePage() {
   const [data, setData] = useState<{
     season: Season | null;
     stats: PlayerStats | null;
+    reigningChampionId: string | null;
     loaded: boolean;
-  }>({ season: null, stats: null, loaded: false });
+  }>({ season: null, stats: null, reigningChampionId: null, loaded: false });
 
   const [selectedVillainId, setSelectedVillainId] = useState<string | null>(
     player?.villainId ?? null,
@@ -42,20 +48,40 @@ export default function ProfilePage() {
       if (authLoading) return;
 
       if (!player) {
-        if (!cancelled) setData({ season: null, stats: null, loaded: true });
+        if (!cancelled)
+          setData({
+            season: null,
+            stats: null,
+            reigningChampionId: null,
+            loaded: true,
+          });
         return;
       }
 
       try {
-        const activeSeason = await getActiveSeason();
+        const [activeSeason, championId] = await Promise.all([
+          getActiveSeason(),
+          getReigningChampionId(),
+        ]);
         const playerStats = activeSeason
           ? await getPlayerStats(player.id, activeSeason.id)
           : null;
         if (!cancelled)
-          setData({ season: activeSeason, stats: playerStats, loaded: true });
+          setData({
+            season: activeSeason,
+            stats: playerStats,
+            reigningChampionId: championId,
+            loaded: true,
+          });
       } catch (err) {
         console.error("Error loading profile data:", err);
-        if (!cancelled) setData({ season: null, stats: null, loaded: true });
+        if (!cancelled)
+          setData({
+            season: null,
+            stats: null,
+            reigningChampionId: null,
+            loaded: true,
+          });
       }
     }
 
@@ -130,7 +156,11 @@ export default function ProfilePage() {
       {/* Header */}
       <div className="flex items-center gap-4 mb-6">
         {selectedVillainId ? (
-          <VillainAvatar villainId={selectedVillainId} size={64} />
+          <VillainAvatar
+            villainId={selectedVillainId}
+            size={64}
+            isChampion={player.id === data.reigningChampionId}
+          />
         ) : (
           <div className="w-16 h-16 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0">
             <span className="text-accent font-medium text-2xl">
@@ -197,7 +227,11 @@ export default function ProfilePage() {
           <p className="font-medium text-text-primary">Your villain</p>
           {selectedVillainId ? (
             <div className="flex items-center gap-3 mt-1">
-              <VillainAvatar villainId={selectedVillainId} size={36} />
+              <VillainAvatar
+                villainId={selectedVillainId}
+                size={36}
+                isChampion={player.id === data.reigningChampionId}
+              />
               <span className="text-text-secondary text-sm">
                 {VILLAINS.find((v) => v.id === selectedVillainId)?.name}
                 {" — "}
